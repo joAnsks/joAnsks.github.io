@@ -166,7 +166,7 @@ Completely isolated from `g{}`. Key fields:
 - **Goal:** navigate ball from (0,0) top-left to ★ exit at bottom-right
 - **Control:** WASD or arrow keys; Space = pause; swipe on canvas (mobile)
 - **Lives:** 3; losing all → Game Over
-- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life and resets chaser to (0,0) with a 2 s grace period; heartbeat sound plays when chaser is within 4 cells (Manhattan distance); a jumpscare overlay flashes briefly if the player survives the catch
+- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life and resets chaser to (0,0) with a 2 s grace period; heartbeat thumps when chaser is within 4 cells (Manhattan distance); a random meme jumpscare flashes for 1.2 s if the player survives the catch
 - **Timer:** `performance.now()` sub-ms accuracy; pause shifts `mg.startTime`
 - **Levels:** maze grows 7×7 → 9×9 → … → 25×25 then cycles (10 sizes)
 - **Best times:** saved per level in `localStorage` key `maze_best`
@@ -202,9 +202,16 @@ Completely isolated from `g{}`. Key fields:
 - Feeds into `tryMove()` in `maze/update.js` via `g.keys[Arrow*]` — no extra logic
 
 ### Jumpscare (`#jumpscare`)
-- Hidden `div` inside `#canvas-wrap`; toggled via `.active` CSS class
-- Shows `😱` on a dark red background for 800 ms when the chaser catches the ball (only if lives remain)
+- Hidden `div` (contains `<img id="jumpscare-img">`) inside `#canvas-wrap`; toggled via `.active` CSS class
+- On catch (lives remaining): picks a random image from `_SCARE_IMGS` array in `maze/update.js`, displays it for 1200 ms
+- Images: 10 popular imgflip memes (Batman Slapping Robin, Change My Mind, Trade Offer, Woman Yelling at Cat, Clown Applying Makeup, Buff Doge vs Cheems, Expanding Brain, Tuxedo Winnie the Pooh, Blank Nut Button, One Does Not Simply)
 - `z-index: 20` — renders above `#overlay`
+
+### Chaser Heartbeat (`startChaserMusic` / `stopChaserMusic` in `js/audio.js`)
+- Frequency-sweep thump: 200 Hz → 40 Hz in 12 ms, lub-dub pattern at ~67 BPM
+- Audible on laptop speakers (unlike a pure sub-bass sine); volume 0.6 / 0.45
+- Starts when `mg.chaserDelay <= 0` and Manhattan distance to ball ≤ 4; stops otherwise
+- Also stopped on: pause, level complete, game over, menu return
 
 ### Overlay
 - Shared for both games: title, message, action button
