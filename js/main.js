@@ -10,6 +10,7 @@ import { startGame, nextLevel, pause, resume, gameOver } from './transitions.js'
 import { drawMaze }               from './maze/draw.js';
 import { updateMaze }             from './maze/update.js';
 import { startMazeGame, mazePause, mazeResume, mazeHandlers } from './maze/game.js';
+import { stopChaserMusic } from './audio.js';
 
 // Inject transition handlers into bounce update (avoids circular dep)
 handlers.gameOver  = gameOver;
@@ -75,6 +76,7 @@ cardMaze.addEventListener('click', () => {
 
 // ── Back to menu ─────────────────────────────────────────────
 backBtn.addEventListener('click', () => {
+  stopChaserMusic();
   showSelectScreen();
 });
 

@@ -3,6 +3,7 @@ import { mg }                       from './state.js';
 import { generateMaze, mazeSize }   from './gen.js';
 import { mazeUpdateHandlers }       from './update.js';
 import { showOverlay, hideOverlay, updateMazeHUD } from '../hud.js';
+import { stopChaserMusic } from '../audio.js';
 
 const BEST_KEY = 'maze_best';
 
@@ -142,6 +143,7 @@ export function startMazeGame() {
 
 // ── Level complete ────────────────────────────────────────────
 export function mazeLevelComplete() {
+  stopChaserMusic();
   saveBestTime(g.level, mg.elapsed);
   mg.awaitingNextLevel = true;
   g.state = 'idle';
@@ -165,6 +167,7 @@ export function mazeLevelComplete() {
 
 // ── Game over ─────────────────────────────────────────────────
 export function mazeGameOver() {
+  stopChaserMusic();
   g.state = 'dead';
   showOverlay(
     'GAME OVER',
@@ -180,6 +183,7 @@ export function mazeGameOver() {
 // ── Pause / Resume ────────────────────────────────────────────
 export function mazePause() {
   if (g.state !== 'playing') return;
+  stopChaserMusic();
   g.state       = 'paused';
   mg._pausedAt  = performance.now();
   showOverlay('PAUSED', 'SPACE or click to resume.', 'RESUME ▶');

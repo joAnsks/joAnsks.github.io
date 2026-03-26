@@ -225,3 +225,27 @@ canvas { display: block; }
   white-space: nowrap;
 }
 .back-btn:hover { color: var(--dark); border-color: var(--dark); }
+
+/* ── Chaser jumpscare overlay ────────────────────────────── */
+#jumpscare {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(80, 0, 0, 0.92);
+  font-size: clamp(80px, 20vw, 140px);
+  line-height: 1;
+}
+
+#jumpscare.active {
+  display: flex;
+  animation: scarePulse 0.15s ease-out;
+}
+
+@keyframes scarePulse {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}

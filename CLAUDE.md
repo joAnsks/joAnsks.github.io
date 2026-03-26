@@ -24,7 +24,7 @@ joAnsks.github.io/
 │   └── style.css       # All page + game styles (includes game-card, back-btn)
 └── js/
     ├── state.js        # Shared canvas, constants, mutable g{} (gameMode added)
-    ├── audio.js        # Web Audio API — sfx object, unlockAudio
+    ├── audio.js        # Web Audio API — sfx object, unlockAudio, startChaserMusic/stopChaserMusic
     ├── particles.js    # burst()
     ├── ball.js         # makeBall(), initBall()
     ├── bricks.js       # 11-layout LAYOUTS array, initBricks()
@@ -166,7 +166,7 @@ Completely isolated from `g{}`. Key fields:
 - **Goal:** navigate ball from (0,0) top-left to ★ exit at bottom-right
 - **Control:** WASD or arrow keys; Space = pause; swipe on canvas (mobile)
 - **Lives:** 3; losing all → Game Over
-- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life and resets chaser to (0,0) with a 2 s grace period
+- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life and resets chaser to (0,0) with a 2 s grace period; heartbeat sound plays when chaser is within 4 cells (Manhattan distance); a jumpscare overlay flashes briefly if the player survives the catch
 - **Timer:** `performance.now()` sub-ms accuracy; pause shifts `mg.startTime`
 - **Levels:** maze grows 7×7 → 9×9 → … → 25×25 then cycles (10 sizes)
 - **Best times:** saved per level in `localStorage` key `maze_best`
@@ -200,6 +200,11 @@ Completely isolated from `g{}`. Key fields:
 ### Maze swipe (mobile)
 - Swipe on `#canvas-wrap`: 24px threshold, fires a 150ms key pulse for one cell move
 - Feeds into `tryMove()` in `maze/update.js` via `g.keys[Arrow*]` — no extra logic
+
+### Jumpscare (`#jumpscare`)
+- Hidden `div` inside `#canvas-wrap`; toggled via `.active` CSS class
+- Shows `😱` on a dark red background for 800 ms when the chaser catches the ball (only if lives remain)
+- `z-index: 20` — renders above `#overlay`
 
 ### Overlay
 - Shared for both games: title, message, action button

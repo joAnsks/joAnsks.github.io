@@ -1,11 +1,17 @@
 import { g }              from '../state.js';
 import { mg }             from './state.js';
-import { sfx }            from '../audio.js';
+import { sfx, startChaserMusic, stopChaserMusic } from '../audio.js';
 import { burst }          from '../particles.js';
 import { updateMazeHUD }  from '../hud.js';
 import { CELL }           from './draw.js';
 
 const BASE_SPEED = 0.14;  // step fraction per frame at normal speed
+
+const _jumpscareEl = document.getElementById('jumpscare');
+function showJumpscare() {
+  _jumpscareEl.classList.add('active');
+  setTimeout(() => _jumpscareEl.classList.remove('active'), 800);
+}
 
 // ── Handlers injected by maze/game.js ────────────────────────
 export const mazeUpdateHandlers = { gameOver: null, levelComplete: null };
@@ -45,6 +51,14 @@ export function updateMaze() {
 
   updateChaser();
   if (g.state !== 'playing') return;
+
+  // Chaser proximity music
+  if (mg.chaserDelay <= 0) {
+    const dist = Math.abs(mg.chaserCol - mg.ballCol) + Math.abs(mg.chaserRow - mg.ballRow);
+    if (dist <= 4) startChaserMusic(); else stopChaserMusic();
+  } else {
+    stopChaserMusic();
+  }
 
   updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
 }
@@ -114,11 +128,13 @@ function updateChaser() {
 
       // Collision check on arrival
       if (mg.chaserCol === mg.ballCol && mg.chaserRow === mg.ballRow) {
+        stopChaserMusic();
         sfx.life();
         burst(mg.chaserPx, mg.chaserPy, '#ff6b6b', 20);
         g.lives--;
         updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
         if (g.lives <= 0) { mazeUpdateHandlers.gameOver(); return; }
+        showJumpscare();
         // Reset chaser to start position with a grace period
         mg.chaserCol    = 0;
         mg.chaserRow    = 0;

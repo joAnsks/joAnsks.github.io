@@ -22,6 +22,26 @@ export const sfx = {
   clear:  () => { [500, 600, 700, 900].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.18, 0.2), i * 80)); },
 };
 
+// ── Chaser proximity music ─────────────────────────────────────
+let _chaserMusicHandle = null;
+
+function _chaserBeat() {
+  playTone(55, 'sine', 0.18, 0.28);                        // lub
+  setTimeout(() => playTone(58, 'sine', 0.14, 0.22), 100); // dub
+  _chaserMusicHandle = setTimeout(_chaserBeat, 900);
+}
+
+export function startChaserMusic() {
+  if (_chaserMusicHandle !== null) return;
+  _chaserBeat();
+}
+
+export function stopChaserMusic() {
+  if (_chaserMusicHandle === null) return;
+  clearTimeout(_chaserMusicHandle);
+  _chaserMusicHandle = null;
+}
+
 function unlockAudio() { if (AC.state === 'suspended') AC.resume(); }
 document.addEventListener('click',   unlockAudio, { once: true });
 document.addEventListener('keydown', unlockAudio, { once: true });
