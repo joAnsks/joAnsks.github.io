@@ -204,7 +204,7 @@ Completely isolated from `g{}`. Key fields:
 ### Jumpscare (`#jumpscare`)
 - Hidden `div` (contains `<img id="jumpscare-img">`) inside `#canvas-wrap`; toggled via `.active` CSS class
 - On catch (lives remaining): picks a random image from `_SCARE_IMGS` array in `maze/update.js`, displays it for 1200 ms
-- Images: 10 popular imgflip memes (Batman Slapping Robin, Change My Mind, Trade Offer, Woman Yelling at Cat, Clown Applying Makeup, Buff Doge vs Cheems, Expanding Brain, Tuxedo Winnie the Pooh, Blank Nut Button, One Does Not Simply)
+- Images: 10 popular imgflip memes sourced via `api.imgflip.com/get_memes` (Batman Slapping Robin, Change My Mind, Trade Offer, Woman Yelling at Cat, Clown Applying Makeup, Buff Doge vs Cheems, Expanding Brain, Tuxedo Winnie the Pooh, Blank Nut Button, One Does Not Simply); URLs are direct `i.imgflip.com` CDN links (e.g. `https://i.imgflip.com/9ehk.jpg`)
 - `z-index: 20` — renders above `#overlay`
 
 ### Chaser Heartbeat (`startChaserMusic` / `stopChaserMusic` in `js/audio.js`)

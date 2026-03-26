@@ -8,16 +8,16 @@ import { CELL }           from './draw.js';
 const BASE_SPEED = 0.14;  // step fraction per frame at normal speed
 
 const _SCARE_IMGS = [
-  'https://i.imgflip.com/s/meme/Batman-Slapping-Robin.jpg',
-  'https://i.imgflip.com/s/meme/Change-My-Mind.jpg',
-  'https://i.imgflip.com/s/meme/Trade-Offer.jpg',
-  'https://i.imgflip.com/s/meme/Woman-Yelling-At-Cat.jpg',
-  'https://i.imgflip.com/s/meme/Clown-Applying-Makeup.jpg',
-  'https://i.imgflip.com/s/meme/Buff-Doge-vs-Cheems.jpg',
-  'https://i.imgflip.com/s/meme/Expanding-Brain.jpg',
-  'https://i.imgflip.com/s/meme/Tuxedo-Winnie-The-Pooh.jpg',
-  'https://i.imgflip.com/s/meme/Blank-Nut-Button.jpg',
-  'https://i.imgflip.com/s/meme/One-Does-Not-Simply.jpg',
+  'https://i.imgflip.com/9ehk.jpg',    // Batman Slapping Robin
+  'https://i.imgflip.com/24y43o.jpg',  // Change My Mind
+  'https://i.imgflip.com/54hjww.jpg',  // Trade Offer
+  'https://i.imgflip.com/345v97.jpg',  // Woman Yelling at Cat
+  'https://i.imgflip.com/38el31.jpg',  // Clown Applying Makeup
+  'https://i.imgflip.com/43a45p.png',  // Buff Doge vs Cheems
+  'https://i.imgflip.com/1jwhww.jpg',  // Expanding Brain
+  'https://i.imgflip.com/2ybua0.png',  // Tuxedo Winnie the Pooh
+  'https://i.imgflip.com/1yxkcp.jpg',  // Blank Nut Button
+  'https://i.imgflip.com/1bij.jpg',    // One Does Not Simply
 ];
 
 const _jumpscareEl = document.getElementById('jumpscare');
