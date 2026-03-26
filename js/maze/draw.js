@@ -111,6 +111,38 @@ export function drawMaze() {
     }
   }
 
+  // ── Chaser ────────────────────────────────────────────────────
+  {
+    // Pulse faster as it gets closer to the ball
+    const dx    = mg.chaserPx - mg.ballPx, dy = mg.chaserPy - mg.ballPy;
+    const dist  = Math.sqrt(dx * dx + dy * dy);
+    const rate  = mg.chaserDelay > 0 ? 500 : Math.max(80, dist * 1.5);
+    const pulse = 0.55 + 0.45 * Math.sin(Date.now() / rate);
+    const alpha = mg.chaserDelay > 60 ? 0 : mg.chaserDelay > 0 ? (1 - mg.chaserDelay / 60) * 0.6 : 1;
+
+    if (alpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      // Glow
+      ctx.shadowColor = '#ff6b6b';
+      ctx.shadowBlur  = 18 * pulse;
+      // Body
+      ctx.fillStyle = '#ff6b6b';
+      ctx.beginPath(); ctx.arc(mg.chaserPx, mg.chaserPy, 9, 0, Math.PI * 2); ctx.fill();
+      // Angry eyes
+      ctx.shadowBlur = 0;
+      ctx.fillStyle  = '#2a1533';
+      ctx.beginPath(); ctx.arc(mg.chaserPx - 3, mg.chaserPy - 2, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(mg.chaserPx + 3, mg.chaserPy - 2, 2.5, 0, Math.PI * 2); ctx.fill();
+      // Angry brow lines
+      ctx.strokeStyle = '#2a1533';
+      ctx.lineWidth   = 1.5;
+      ctx.beginPath(); ctx.moveTo(mg.chaserPx - 5.5, mg.chaserPy - 5); ctx.lineTo(mg.chaserPx - 1, mg.chaserPy - 3.5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mg.chaserPx + 5.5, mg.chaserPy - 5); ctx.lineTo(mg.chaserPx + 1, mg.chaserPy - 3.5); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   // ── Shield ring around ball ───────────────────────────────────
   if (mg.shielded) {
     const sr = 0.7 + 0.3 * Math.sin(Date.now() / 180);

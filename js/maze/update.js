@@ -43,12 +43,102 @@ export function updateMaze() {
     tryMove();
   }
 
+  updateChaser();
+  if (g.state !== 'playing') return;
+
   updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
 }
 
 // ── Ease in-out curve for smooth animation ────────────────────
 function easeInOut(t) {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+// ── BFS: find next step from chaser toward ball ───────────────
+function chaserBFS() {
+  const sc = mg.chaserCol, sr = mg.chaserRow;
+  const tc = mg.ballCol,   tr = mg.ballRow;
+  if (sc === tc && sr === tr) return null;
+
+  const DIRS = [
+    { dr: -1, dc:  0, wall: 'N' },
+    { dr:  1, dc:  0, wall: 'S' },
+    { dr:  0, dc:  1, wall: 'E' },
+    { dr:  0, dc: -1, wall: 'W' },
+  ];
+  const parent  = Array.from({ length: mg.rows }, () => new Array(mg.cols).fill(null));
+  const visited = Array.from({ length: mg.rows }, () => new Array(mg.cols).fill(false));
+  const queue   = [{ r: sr, c: sc }];
+  visited[sr][sc] = true;
+
+  let found = false;
+  outer: while (queue.length) {
+    const { r, c } = queue.shift();
+    if (r === tr && c === tc) { found = true; break outer; }
+    for (const { dr, dc, wall } of DIRS) {
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < mg.rows && nc >= 0 && nc < mg.cols &&
+          !visited[nr][nc] && !mg.grid[r][c].walls[wall]) {
+        visited[nr][nc] = true;
+        parent[nr][nc]  = { r, c };
+        queue.push({ r: nr, c: nc });
+      }
+    }
+  }
+  if (!found) return null;
+
+  // Walk back from target to find the first step after chaser start
+  let cur = { r: tr, c: tc };
+  while (parent[cur.r][cur.c] && !(parent[cur.r][cur.c].r === sr && parent[cur.r][cur.c].c === sc)) {
+    cur = parent[cur.r][cur.c];
+  }
+  return { col: cur.c, row: cur.r };
+}
+
+// ── Tick chaser movement and check collision ──────────────────
+function updateChaser() {
+  if (mg.chaserDelay > 0) { mg.chaserDelay--; return; }
+
+  if (mg.chaserMoving) {
+    mg.chaserMoveT = Math.min(1, mg.chaserMoveT + mg.chaserSpeed);
+    const t = easeInOut(mg.chaserMoveT);
+    mg.chaserPx = (mg.chaserMoveFrom.col + (mg.chaserMoveTo.col - mg.chaserMoveFrom.col) * t) * CELL + CELL / 2;
+    mg.chaserPy = (mg.chaserMoveFrom.row + (mg.chaserMoveTo.row - mg.chaserMoveFrom.row) * t) * CELL + CELL / 2;
+
+    if (mg.chaserMoveT >= 1) {
+      mg.chaserMoving = false;
+      mg.chaserCol    = mg.chaserMoveTo.col;
+      mg.chaserRow    = mg.chaserMoveTo.row;
+      mg.chaserPx     = mg.chaserCol * CELL + CELL / 2;
+      mg.chaserPy     = mg.chaserRow * CELL + CELL / 2;
+
+      // Collision check on arrival
+      if (mg.chaserCol === mg.ballCol && mg.chaserRow === mg.ballRow) {
+        sfx.life();
+        burst(mg.chaserPx, mg.chaserPy, '#ff6b6b', 20);
+        g.lives--;
+        updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
+        if (g.lives <= 0) { mazeUpdateHandlers.gameOver(); return; }
+        // Reset chaser to its starting corner with a grace period
+        mg.chaserCol    = mg.cols - 1;
+        mg.chaserRow    = 0;
+        mg.chaserPx     = mg.chaserCol * CELL + CELL / 2;
+        mg.chaserPy     = CELL / 2;
+        mg.chaserMoving = false;
+        mg.chaserMoveT  = 0;
+        mg.chaserDelay  = 120;
+        return;
+      }
+    }
+  } else {
+    const next = chaserBFS();
+    if (next) {
+      mg.chaserMoving   = true;
+      mg.chaserMoveFrom = { col: mg.chaserCol, row: mg.chaserRow };
+      mg.chaserMoveTo   = { col: next.col,     row: next.row };
+      mg.chaserMoveT    = 0;
+    }
+  }
 }
 
 // ── Read keyboard input and start a move if the wall is open ──

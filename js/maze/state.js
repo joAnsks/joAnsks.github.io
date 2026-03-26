@@ -47,4 +47,16 @@ export const mg = {
 
   // Flow flag: true after mazeLevelComplete(), cleared when next level begins
   awaitingNextLevel: false,
+
+  // Chaser — enemy that hunts the ball via BFS
+  chaserCol:      0,
+  chaserRow:      0,
+  chaserPx:       0,
+  chaserPy:       0,
+  chaserMoving:   false,
+  chaserMoveFrom: { col: 0, row: 0 },
+  chaserMoveTo:   { col: 0, row: 0 },
+  chaserMoveT:    0,
+  chaserSpeed:    0.07,   // slower than player's 0.14
+  chaserDelay:    180,    // frames before chaser activates (3 s head start)
 };
