@@ -244,6 +244,22 @@ Completely isolated from `g{}`. Key fields:
 
 ---
 
+## Open Graph / Social Sharing
+
+`index.html` contains `og:*` and `twitter:card` meta tags pointing to `og-image.png` in the repo root.
+This image is **not committed** — generate it once using the tool below.
+
+### Generating `og-image.png`
+1. Open `tools/make-og.html` via Live Server (requires HTTP, not `file://`)
+2. Click **⬇ Download og-image.png**
+3. Move the downloaded file to the project root (next to `index.html`)
+4. Commit and push — Facebook/Twitter will use it for all link previews
+
+The tool draws a 1200×630 branded card: title, two game cards (🧱 / 🌀), and the site URL.
+After regenerating, clear Facebook's cache at: https://developers.facebook.com/tools/debug/
+
+---
+
 ## Running Locally
 
 ES modules require HTTP — `file://` will fail.

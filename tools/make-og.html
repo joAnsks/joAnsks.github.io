@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OG Image Generator — Pastel Bounce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: #1a0d22;
+      color: #cdb4db;
+      font-family: 'Press Start 2P', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px;
+      gap: 20px;
+    }
+    h1  { font-size: 13px; color: #ffb3c1; }
+    p   { font-size: 8px; line-height: 2; text-align: center; color: #9a7ab0; }
+    canvas { max-width: 100%; border: 3px solid #cdb4db; border-radius: 10px; }
+    button {
+      padding: 12px 28px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #3d2b4e;
+      background: linear-gradient(135deg, #b5ead7, #bde0fe);
+      border: 3px solid #3d2b4e;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #3d2b4e;
+    }
+    button:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #3d2b4e; }
+  </style>
+</head>
+<body>
+  <h1>★ OG Image Generator ★</h1>
+  <p>
+    1. Open this file via Live Server (not file://)<br>
+    2. Click the button to download <strong>og-image.png</strong><br>
+    3. Move it to the project root (next to index.html)<br>
+    4. Commit and push — Facebook will show it on shares
+  </p>
+  <canvas id="cv"></canvas>
+  <button id="dl">⬇ Download og-image.png</button>
+
+<script>
+const W = 1200, H = 630;
+
+document.fonts.ready.then(() => {
+  const cv  = document.getElementById('cv');
+  cv.width  = W; cv.height = H;
+  drawCard(cv.getContext('2d'));
+
+  document.getElementById('dl').addEventListener('click', () => {
+    const a   = document.createElement('a');
+    a.download = 'og-image.png';
+    a.href     = cv.toDataURL('image/png');
+    a.click();
+  });
+});
+
+function drawCard(ctx) {
+  const pf = document.fonts.check('bold 68px "Press Start 2P"')
+               ? '"Press Start 2P", monospace' : 'monospace';
+
+  // ── Background ───────────────────────────────────────────────
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0,  '#3b1a4e');
+  bg.addColorStop(.5, '#2a1533');
+  bg.addColorStop(1,  '#1c0e26');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Radial sheen
+  const sheen = ctx.createRadialGradient(W * .28, H * .22, 0, W * .28, H * .22, W * .72);
+  sheen.addColorStop(0,  'rgba(255,179,193,.18)');
+  sheen.addColorStop(.5, 'rgba(205,180,219,.10)');
+  sheen.addColorStop(1,  'transparent');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Borders ──────────────────────────────────────────────────
+  ctx.strokeStyle = '#cdb4db';
+  ctx.lineWidth   = 7;
+  rrect(ctx, 16, 16, W - 32, H - 32, 22); ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(205,180,219,.28)';
+  ctx.lineWidth   = 2;
+  rrect(ctx, 30, 30, W - 60, H - 60, 14); ctx.stroke();
+
+  // ── Top stars ────────────────────────────────────────────────
+  ctx.fillStyle = '#fdffb6';
+  ctx.font      = '34px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('★  ★  ★  ★  ★', W / 2, 80);
+
+  // ── Title ────────────────────────────────────────────────────
+  ctx.font      = `bold 68px ${pf}`;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(0,0,0,.55)';
+  ctx.fillText('PASTEL BOUNCE', W / 2 + 5, 167);
+  ctx.fillStyle = '#ffb3c1';
+  ctx.fillText('PASTEL BOUNCE', W / 2, 162);
+
+  ctx.font      = `20px ${pf}`;
+  ctx.fillStyle = '#cdb4db';
+  ctx.fillText('retro mini-games', W / 2, 208);
+
+  // ── Divider ──────────────────────────────────────────────────
+  const dg = hGrad(ctx, 60, W - 60, '#cdb4db');
+  ctx.strokeStyle = dg; ctx.lineWidth = 2;
+  hline(ctx, 60, W - 60, 232);
+
+  // ── Game cards ───────────────────────────────────────────────
+  gameCard(ctx, pf, W / 2 - 290, 256, 246, 208, '🧱', 'BRICK', 'BREAKER', '#b5ead7');
+  gameCard(ctx, pf, W / 2 +  44, 256, 246, 208, '🌀', 'BALL',  'MAZE',    '#bde0fe');
+
+  // ── Footer ───────────────────────────────────────────────────
+  ctx.strokeStyle = dg; ctx.lineWidth = 2;
+  hline(ctx, 60, W - 60, 490);
+
+  ctx.fillStyle = '#b5ead7';
+  ctx.font      = `22px ${pf}`;
+  ctx.textAlign = 'center';
+  ctx.fillText('joAnsks.github.io', W / 2, 538);
+
+  ctx.fillStyle = '#fdffb6';
+  ctx.font      = '28px sans-serif';
+  ctx.fillText('⭐  Play Free  ⭐', W / 2, 592);
+}
+
+function gameCard(ctx, pf, x, y, w, h, icon, line1, line2, accent) {
+  ctx.fillStyle = 'rgba(255,255,255,.07)';
+  rrect(ctx, x, y, w, h, 18); ctx.fill();
+
+  ctx.strokeStyle = accent + 'aa';
+  ctx.lineWidth   = 3;
+  ctx.stroke();
+
+  // Icon
+  ctx.font      = '58px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(icon, x + w / 2, y + 72);
+
+  // Name
+  ctx.fillStyle = accent;
+  ctx.font      = `16px ${pf}`;
+  ctx.fillText(line1, x + w / 2, y + 122);
+  ctx.fillText(line2, x + w / 2, y + 152);
+
+  // Tagline
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  ctx.font      = `10px ${pf}`;
+  const tag = line1 === 'BRICK' ? 'break all the bricks' : 'beat your best time';
+  ctx.fillText(tag, x + w / 2, y + 182);
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);   ctx.quadraticCurveTo(x + w, y,     x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);   ctx.quadraticCurveTo(x,     y + h, x,     y + h - r);
+  ctx.lineTo(x, y + r);       ctx.quadraticCurveTo(x,     y,     x + r, y);
+  ctx.closePath();
+}
+function hGrad(ctx, x1, x2, color) {
+  const g = ctx.createLinearGradient(x1, 0, x2, 0);
+  g.addColorStop(0,   'transparent');
+  g.addColorStop(.15, color);
+  g.addColorStop(.85, color);
+  g.addColorStop(1,   'transparent');
+  return g;
+}
+function hline(ctx, x1, x2, y) {
+  ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+}
+</script>
+</body>
+</html>
