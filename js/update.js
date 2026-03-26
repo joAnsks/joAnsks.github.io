@@ -16,7 +16,6 @@ function ballHitsBrick(ball, b) {
 
 export function update() {
   tickPUs();
-  updateHUD();
 
   // Paddle movement
   if (g.mouseX !== null) {
@@ -72,6 +71,7 @@ export function update() {
         if (b.hp <= 0) {
           b.alive = false;
           g.score += b.pts * g.level;
+          updateHUD();
           burst(b.x + g.brickW / 2, b.y + g.brickH / 2, b.color);
           if (b.pu) spawnDrop(b.x + g.brickW / 2, b.y + g.brickH / 2, randomPUType());
         } else {
@@ -90,6 +90,7 @@ export function update() {
     g.lives--;
     sfx.life();
     g.shakeT = 12; g.shakeAmt = 7;
+    updateHUD();
     if (g.lives <= 0) { handlers.gameOver(); return; }
     initBall();
   }
@@ -98,6 +99,7 @@ export function update() {
   if (g.bricks.every(b => !b.alive)) {
     sfx.clear();
     g.level++;
+    updateHUD();
     handlers.nextLevel();
     return;
   }
