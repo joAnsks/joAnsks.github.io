@@ -32,6 +32,7 @@ window.addEventListener('keydown', e => {
 // ── Overlay button ───────────────────────────────────────────────
 oBtn.addEventListener('click', () => {
   if (g.state === 'paused') resume();
+  else if (g.state === 'idle') resume();  // level-advance overlay — just unpause, don't reset
   else startGame();
 });
 
