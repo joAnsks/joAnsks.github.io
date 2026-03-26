@@ -4,6 +4,7 @@ import { burst } from './particles.js';
 import { tickPUs, spawnDrop, applyPU, randomPUType } from './powerups.js';
 import { clampPad } from './paddle.js';
 import { initBall } from './ball.js';
+import { updateHUD } from './hud.js';
 
 // gameOver / nextLevel injected by main.js to avoid circular dep with transitions.js
 export const handlers = { gameOver: null, nextLevel: null };
@@ -15,6 +16,7 @@ function ballHitsBrick(ball, b) {
 
 export function update() {
   tickPUs();
+  updateHUD();
 
   // Paddle movement
   if (g.mouseX !== null) {
