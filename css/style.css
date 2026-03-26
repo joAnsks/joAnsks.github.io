@@ -211,6 +211,44 @@ canvas { display: block; }
 .gc-name  { font-size: clamp(8px, 2vw, 11px); color: var(--dark); text-align: center; line-height: 1.8; }
 .gc-desc  { font-size: 6px; color: var(--shadow); text-align: center; line-height: 2; }
 
+/* ── Maze D-pad ─────────────────────────────────────────── */
+#maze-dpad {
+  display: grid;
+  grid-template-areas:
+    ". up ."
+    "left center right"
+    ". down .";
+  grid-template-columns: repeat(3, 60px);
+  grid-template-rows: repeat(3, 60px);
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+#dpad-up     { grid-area: up; }
+#dpad-left   { grid-area: left; }
+.dpad-center { grid-area: center; }
+#dpad-right  { grid-area: right; }
+#dpad-down   { grid-area: down; }
+.dpad-btn {
+  width: 60px;
+  height: 60px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  color: var(--dark);
+  background: var(--panel);
+  border: 3px solid var(--shadow);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--shadow);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform .08s, box-shadow .08s;
+}
+.dpad-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--shadow);
+}
+
 /* ── Back button ────────────────────────────────────────── */
 .back-btn {
   padding: 6px 12px;

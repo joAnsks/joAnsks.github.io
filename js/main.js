@@ -19,11 +19,26 @@ handlers.nextLevel = nextLevel;
 const gameSelect  = document.getElementById('game-select');
 const hud         = document.getElementById('hud');
 const canvasWrap  = document.getElementById('canvas-wrap');
+const mazeDpad    = document.getElementById('maze-dpad');
 const powerupBar  = document.getElementById('powerup-bar');
 const controlHint = document.getElementById('controls-hint');
 const backBtn     = document.getElementById('back-btn');
 const cardBounce  = document.getElementById('card-bounce');
 const cardMaze    = document.getElementById('card-maze');
+
+// ── D-pad wiring ──────────────────────────────────────────────
+const DPAD_KEYS = { 'dpad-up': 'ArrowUp', 'dpad-down': 'ArrowDown', 'dpad-left': 'ArrowLeft', 'dpad-right': 'ArrowRight' };
+Object.entries(DPAD_KEYS).forEach(([id, key]) => {
+  const btn = document.getElementById(id);
+  const press   = () => { g.keys[key] = true; };
+  const release = () => { g.keys[key] = false; };
+  btn.addEventListener('touchstart',  e => { e.preventDefault(); press(); },   { passive: false });
+  btn.addEventListener('touchend',    e => { e.preventDefault(); release(); }, { passive: false });
+  btn.addEventListener('touchcancel', e => { e.preventDefault(); release(); }, { passive: false });
+  btn.addEventListener('mousedown',  press);
+  btn.addEventListener('mouseup',    release);
+  btn.addEventListener('mouseleave', release);
+});
 
 // ── Canvas resize ─────────────────────────────────────────────
 function resize() {
@@ -44,6 +59,9 @@ function showGameUI(mode) {
   controlHint.style.display = '';
   if (mode === 'bounce') {
     powerupBar.style.display = '';
+    mazeDpad.style.display   = 'none';
+  } else if (mode === 'maze') {
+    mazeDpad.style.display   = 'grid';
   }
   setHUDMode(mode);
 }
@@ -52,6 +70,7 @@ function showSelectScreen() {
   gameSelect.style.display  = '';
   hud.style.display         = 'none';
   canvasWrap.style.display  = 'none';
+  mazeDpad.style.display    = 'none';
   powerupBar.style.display  = 'none';
   controlHint.style.display = 'none';
   g.gameMode = null;

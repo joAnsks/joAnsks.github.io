@@ -13,10 +13,37 @@ wrap.addEventListener('mousemove', e => {
 });
 wrap.addEventListener('mouseleave', () => { g.mouseX = null; });
 
-// ── Touch ─────────────────────────────────────────────────────────
+// ── Touch — bounce paddle ─────────────────────────────────────────
 wrap.addEventListener('touchmove', e => {
-  if (g.state !== 'playing') return;
+  if (g.state !== 'playing' || g.gameMode !== 'bounce') return;
   e.preventDefault();
   const rect = canvas.getBoundingClientRect();
   g.mouseX = e.touches[0].clientX - rect.left - g.padW / 2;
 }, { passive: false });
+
+// ── Touch — maze swipe ────────────────────────────────────────────
+let _swipeX = null, _swipeY = null;
+const SWIPE_THRESHOLD = 24;
+
+wrap.addEventListener('touchstart', e => {
+  if (g.gameMode !== 'maze' || g.state !== 'playing') return;
+  e.preventDefault();
+  _swipeX = e.touches[0].clientX;
+  _swipeY = e.touches[0].clientY;
+}, { passive: false });
+
+wrap.addEventListener('touchend', e => {
+  if (g.gameMode !== 'maze' || g.state !== 'playing' || _swipeX === null) return;
+  e.preventDefault();
+  const dx = e.changedTouches[0].clientX - _swipeX;
+  const dy = e.changedTouches[0].clientY - _swipeY;
+  _swipeX = _swipeY = null;
+  if (Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD) return;
+  const key = Math.abs(dx) > Math.abs(dy)
+    ? (dx > 0 ? 'ArrowRight' : 'ArrowLeft')
+    : (dy > 0 ? 'ArrowDown'  : 'ArrowUp');
+  g.keys[key] = true;
+  setTimeout(() => { g.keys[key] = false; }, 150);
+}, { passive: false });
+
+wrap.addEventListener('touchcancel', () => { _swipeX = _swipeY = null; });
