@@ -6,7 +6,8 @@ export function updateHUD() {
   document.getElementById('score-display').textContent = g.score;
   document.getElementById('level-display').textContent = g.level;
   document.getElementById('lives-display').textContent = '♥'.repeat(Math.max(0, g.lives));
-  g.best = Math.max(g.best, g.score);
+  const newBest = Math.max(g.best, g.score);
+  if (newBest > g.best) { g.best = newBest; localStorage.setItem('pb_best', g.best); }
   document.getElementById('best-display').textContent  = g.best;
   document.getElementById('powerup-bar').innerHTML     = puBarHTML();
 }
