@@ -25,9 +25,22 @@ export const sfx = {
 // ── Chaser proximity music ─────────────────────────────────────
 let _chaserMusicHandle = null;
 
+function _thump(startFreq, vol) {
+  try {
+    const o = AC.createOscillator(), gn = AC.createGain();
+    o.connect(gn); gn.connect(AC.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(startFreq, AC.currentTime);
+    o.frequency.exponentialRampToValueAtTime(40, AC.currentTime + 0.12);
+    gn.gain.setValueAtTime(vol, AC.currentTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + 0.18);
+    o.start(); o.stop(AC.currentTime + 0.18);
+  } catch (_) {}
+}
+
 function _chaserBeat() {
-  playTone(55, 'sine', 0.18, 0.28);                        // lub
-  setTimeout(() => playTone(58, 'sine', 0.14, 0.22), 100); // dub
+  _thump(200, 0.6);                                    // lub
+  setTimeout(() => _thump(160, 0.45), 200);            // dub
   _chaserMusicHandle = setTimeout(_chaserBeat, 900);
 }
 

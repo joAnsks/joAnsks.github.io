@@ -7,10 +7,25 @@ import { CELL }           from './draw.js';
 
 const BASE_SPEED = 0.14;  // step fraction per frame at normal speed
 
+const _SCARE_IMGS = [
+  'https://i.imgflip.com/s/meme/Batman-Slapping-Robin.jpg',
+  'https://i.imgflip.com/s/meme/Change-My-Mind.jpg',
+  'https://i.imgflip.com/s/meme/Trade-Offer.jpg',
+  'https://i.imgflip.com/s/meme/Woman-Yelling-At-Cat.jpg',
+  'https://i.imgflip.com/s/meme/Clown-Applying-Makeup.jpg',
+  'https://i.imgflip.com/s/meme/Buff-Doge-vs-Cheems.jpg',
+  'https://i.imgflip.com/s/meme/Expanding-Brain.jpg',
+  'https://i.imgflip.com/s/meme/Tuxedo-Winnie-The-Pooh.jpg',
+  'https://i.imgflip.com/s/meme/Blank-Nut-Button.jpg',
+  'https://i.imgflip.com/s/meme/One-Does-Not-Simply.jpg',
+];
+
 const _jumpscareEl = document.getElementById('jumpscare');
+const _jumpscareImg = document.getElementById('jumpscare-img');
 function showJumpscare() {
+  _jumpscareImg.src = _SCARE_IMGS[Math.floor(Math.random() * _SCARE_IMGS.length)];
   _jumpscareEl.classList.add('active');
-  setTimeout(() => _jumpscareEl.classList.remove('active'), 800);
+  setTimeout(() => _jumpscareEl.classList.remove('active'), 1200);
 }
 
 // ── Handlers injected by maze/game.js ────────────────────────
