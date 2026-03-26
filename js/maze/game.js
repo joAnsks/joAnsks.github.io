@@ -105,7 +105,9 @@ export function mazeLevelComplete() {
     `Time: ${timeStr}<br>Best: ${bestStr}<br><br>Level ${g.level} complete!`,
     'NEXT LEVEL ▶',
     `I cleared level ${g.level} of Ball Maze in ${timeStr}! 🌀 Play at joAnsks.github.io`,
-    'Ball Maze'
+    'Ball Maze',
+    timeStr,
+    'TIME'
   );
 }
 
@@ -117,7 +119,9 @@ export function mazeGameOver() {
     `You reached level ${g.level}.<br><br>Better luck next time!`,
     'TRY AGAIN ▶',
     `I reached level ${g.level} in Ball Maze! 🌀 Can you go further? Play at joAnsks.github.io`,
-    'Ball Maze'
+    'Ball Maze',
+    `LVL ${g.level}`,
+    'LEVEL REACHED'
   );
 }
 

@@ -67,20 +67,23 @@ const oMsg     = document.getElementById('overlay-msg');
 export const oBtn = document.getElementById('overlay-btn');
 const oShare   = document.getElementById('share-btn');
 
-let _pendingShare = null; // { shareText, gameName }
+let _pendingShare = null; // { shareText, gameName, stat, statLabel }
 
 oShare.addEventListener('click', () => {
-  if (_pendingShare) shareScore(_pendingShare.shareText, _pendingShare.gameName);
+  if (_pendingShare) {
+    const { shareText, gameName, stat, statLabel } = _pendingShare;
+    shareScore(shareText, gameName, stat, statLabel, oShare);
+  }
 });
 
-export function showOverlay(title, msg, btnTxt, shareText, gameName) {
+export function showOverlay(title, msg, btnTxt, shareText, gameName, stat, statLabel) {
   oTitle.textContent    = title;
   oMsg.innerHTML        = msg;
   oBtn.textContent      = btnTxt;
   overlay.style.display = 'flex';
 
   if (shareText) {
-    _pendingShare        = { shareText, gameName: gameName || 'Pastel Bounce' };
+    _pendingShare        = { shareText, gameName: gameName || 'Pastel Bounce', stat, statLabel };
     oShare.style.display = '';
   } else {
     _pendingShare        = null;

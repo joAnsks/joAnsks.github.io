@@ -201,14 +201,18 @@ Completely isolated from `g{}`. Key fields:
 - Share button hidden on: pause, resume, intro, next-level overlays
 
 ### Share (`js/share.js`)
-- `shareScore(shareText, gameName)` — generates a 1200×630 score card canvas image, then:
-  1. **Web Share API** with image file (mobile / modern desktop Chrome) — native share sheet
-  2. **Fallback**: opens Facebook sharer popup (`/sharer/sharer.php?u=&quote=`)
-- `generateScoreCard(shareText, gameName)` — draws pastel-themed card on a hidden `<canvas>`:
-  - Dark purple background + diagonal gradient sheen + rounded lavender border
-  - Game name in pink (`--pink`), score text in yellow (`--yellow`), footer URL in mint
-  - Uses `document.fonts.load()` to ensure Press Start 2P is available; falls back to monospace
-  - Returns a `File` (PNG blob) for Web Share API
+- `shareScore(shareText, gameName, stat, statLabel, btnEl)` — generates score card, uploads it, opens FB sharer
+  1. Generates 1200×630 PNG score card on a hidden canvas
+  2. Uploads to **imgBB** (`IMGBB_KEY` constant — get free key at imgbb.com/account/api)
+  3. Opens `facebook.com/sharer/sharer.php?u=SITE&picture=IMG_URL&quote=TEXT` in a popup
+  4. If upload fails or no key set: opens FB sharer without the `picture=` param (text only)
+  5. `btnEl` shows "SHARING..." + disabled during upload, restored after
+- `generateScoreCard(shareText, gameName, stat, statLabel)` — canvas card layout:
+  - 1200×630, dark purple bg + radial pink/lavender sheen + double rounded border
+  - Stars → game name (pink, drop-shadow) → divider → **stat box** (semi-transparent fill)
+  - Stat box: label (lavender, small) + stat value (yellow, glowing `shadowBlur=32`, auto-sized to fit)
+  - Tagline (emoji-stripped share text) → divider → mint URL footer → yellow stars
+  - Uses `document.fonts.ready` then `fonts.check()` to use Press Start 2P or fall back to monospace
 
 ---
 

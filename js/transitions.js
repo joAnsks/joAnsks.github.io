@@ -40,6 +40,8 @@ export function gameOver() {
     `Final score: ${g.score}<br><br>${g.score >= g.best && g.score > 0 ? '✦ New Best! ✦' : `Best: ${g.best}`}`,
     'PLAY AGAIN ▶',
     `I scored ${g.score} in Pastel Bounce! 🧱 Can you beat me? Play at joAnsks.github.io`,
-    'Pastel Bounce'
+    'Pastel Bounce',
+    g.score,
+    'SCORE'
   );
 }
