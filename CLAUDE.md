@@ -159,7 +159,7 @@ Completely isolated from `g{}`. Key fields:
 
 ### Gameplay
 - **Goal:** navigate ball from (0,0) top-left to ★ exit at bottom-right
-- **Control:** WASD or arrow keys; Space = pause; swipe on canvas; on-screen D-pad (`#maze-dpad`)
+- **Control:** WASD or arrow keys; Space = pause; swipe on canvas (mobile)
 - **Lives:** 3; spike trap costs 1 life (respawn at start); game over at 0
 - **Timer:** `performance.now()` sub-ms accuracy; pause shifts `mg.startTime`
 - **Levels:** maze grows 7×7 → 9×9 → … → 25×25 then cycles (10 sizes)
@@ -191,13 +191,9 @@ Completely isolated from `g{}`. Key fields:
 - Score label dynamically switches: **SCORE** (bounce) ↔ **TIME** (maze) via `setHUDMode()`
 - Maze time shown as `ss.cs` or `m:ss.cs`
 
-### Maze D-pad (`#maze-dpad`)
-- Shown only during maze mode (`display:grid`), hidden otherwise
-- 3×3 CSS Grid with `grid-template-areas`: ▲ ◀ ▶ ▼ buttons + empty center
-- Each `.dpad-btn` fires `touchstart`/`touchend`/`touchcancel` (with `preventDefault`) and `mousedown`/`mouseup`/`mouseleave` to set/clear `g.keys[Arrow*]`
-- Holding a button moves the ball continuously cell-by-cell
-- Swipe on the canvas (`#canvas-wrap`) also works: 24px threshold, one-shot 150ms key pulse
-- Both inputs feed into the existing `tryMove()` in `maze/update.js` with no extra logic
+### Maze swipe (mobile)
+- Swipe on `#canvas-wrap`: 24px threshold, fires a 150ms key pulse for one cell move
+- Feeds into `tryMove()` in `maze/update.js` via `g.keys[Arrow*]` — no extra logic
 
 ### Overlay
 - Shared for both games: title, message, action button
