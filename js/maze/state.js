@@ -34,7 +34,7 @@ export const mg = {
   boosted:     false,
   boostTimer:  0,
 
-  // Scattered entities: { col, row, type: 'spike'|'freeze'|'speed'|'shield', hit: false }
+  // Scattered entities: { col, row, type: 'teleport'|'freeze'|'speed'|'shield', hit: false }
   entities: [],
 
   // Timer

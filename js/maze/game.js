@@ -19,28 +19,69 @@ function saveBestTime(level, ms) {
   }
 }
 
+// ── BFS to find the solution path (start → exit) ─────────────
+function solveMazePath(cols, rows) {
+  const DIRS = [
+    { dr: -1, dc:  0, wall: 'N' },
+    { dr:  1, dc:  0, wall: 'S' },
+    { dr:  0, dc:  1, wall: 'E' },
+    { dr:  0, dc: -1, wall: 'W' },
+  ];
+  const parent  = Array.from({ length: rows }, () => new Array(cols).fill(null));
+  const visited = Array.from({ length: rows }, () => new Array(cols).fill(false));
+  const queue   = [{ r: 0, c: 0 }];
+  visited[0][0] = true;
+
+  outer: while (queue.length) {
+    const { r, c } = queue.shift();
+    if (r === rows - 1 && c === cols - 1) break outer;
+    for (const { dr, dc, wall } of DIRS) {
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols &&
+          !visited[nr][nc] && !mg.grid[r][c].walls[wall]) {
+        visited[nr][nc] = true;
+        parent[nr][nc]  = { r, c };
+        queue.push({ r: nr, c: nc });
+      }
+    }
+  }
+
+  // Reconstruct path as a Set of "col,row" keys
+  const path = new Set();
+  let cur = { r: rows - 1, c: cols - 1 };
+  while (cur) {
+    path.add(`${cur.c},${cur.r}`);
+    cur = parent[cur.r][cur.c];
+  }
+  return path;
+}
+
 // ── Scatter traps & power-ups ─────────────────────────────────
 function placeEntities(cols, rows) {
   mg.entities = [];
-  const TYPES   = ['spike', 'spike', 'freeze', 'freeze', 'speed', 'shield'];
-  const density = 0.10;  // ~10% of cells get an entity
-  const total   = Math.floor(cols * rows * density);
+  const TYPES      = ['teleport', 'teleport', 'freeze', 'freeze', 'speed', 'shield'];
+  const TRAP_TYPES = new Set(['teleport', 'freeze']);
+  const density    = 0.10;  // ~10% of cells get an entity
+  const total      = Math.floor(cols * rows * density);
 
+  // Traps must never sit on the only path from start to exit
+  const solutionPath = solveMazePath(cols, rows);
   const used = new Set(['0,0', `${cols-1},${rows-1}`]); // skip start + exit
 
   for (let i = 0; i < total; i++) {
-    let col, row, key;
+    let col, row, key, type;
     let attempts = 0;
     do {
-      col = Math.floor(Math.random() * cols);
-      row = Math.floor(Math.random() * rows);
-      key = `${col},${row}`;
+      col  = Math.floor(Math.random() * cols);
+      row  = Math.floor(Math.random() * rows);
+      key  = `${col},${row}`;
+      type = TYPES[Math.floor(Math.random() * TYPES.length)];
       attempts++;
-    } while (used.has(key) && attempts < 200);
+    } while ((used.has(key) || (TRAP_TYPES.has(type) && solutionPath.has(key))) && attempts < 200);
     if (attempts >= 200) break;
 
     used.add(key);
-    mg.entities.push({ col, row, type: TYPES[Math.floor(Math.random() * TYPES.length)], hit: false });
+    mg.entities.push({ col, row, type, hit: false });
   }
 }
 
@@ -81,7 +122,7 @@ export function startMazeGame() {
   showOverlay(
     'BALL MAZE',
     'Reach the ★ exit to complete each level.<br><br>' +
-    '✕ spike costs a life &nbsp;|&nbsp; ❄ slows you<br>' +
+    '⟳ teleport warps you &nbsp;|&nbsp; ❄ slows you<br>' +
     '★ speed boost &nbsp;|&nbsp; ♥ shield<br><br>' +
     'WASD or ARROW KEYS to move.<br>SPACE to pause.',
     'START ▶'

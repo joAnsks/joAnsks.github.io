@@ -75,8 +75,8 @@ export function drawMaze() {
     const ey = ent.row * CELL + CELL / 2;
     const ep = 0.7 + 0.3 * Math.sin(Date.now() / 300 + ent.col + ent.row);
 
-    const ICONS = { spike: '✕', freeze: '❄', speed: '★', shield: '♥' };
-    const COLORS = { spike: '#ffb3c1', freeze: '#bde0fe', speed: '#fdffb6', shield: '#cdb4db' };
+    const ICONS  = { teleport: '⟳', freeze: '❄', speed: '★', shield: '♥' };
+    const COLORS = { teleport: '#ffb3c1', freeze: '#bde0fe', speed: '#fdffb6', shield: '#cdb4db' };
 
     ctx.save();
     ctx.shadowColor = COLORS[ent.type];

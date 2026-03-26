@@ -88,7 +88,7 @@ function onLanded() {
   for (const ent of mg.entities) {
     if (!ent.hit && ent.col === mg.ballCol && ent.row === mg.ballRow) {
       ent.hit = true;
-      if (ent.type === 'spike' || ent.type === 'freeze') handleTrap(ent.type);
+      if (ent.type === 'teleport' || ent.type === 'freeze') handleTrap(ent.type);
       else                                               handlePowerup(ent.type);
       break;
     }
@@ -104,18 +104,23 @@ function handleTrap(type) {
     return;
   }
 
-  if (type === 'spike') {
-    sfx.life();
+  if (type === 'teleport') {
+    sfx.pu();
     burst(mg.ballPx, mg.ballPy, '#ffb3c1', 18);
-    g.lives--;
-    updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
-    if (g.lives <= 0) { mazeUpdateHandlers.gameOver(); return; }
 
-    // Respawn at start
-    mg.ballCol = 0; mg.ballRow = 0;
-    mg.ballPx  = CELL / 2; mg.ballPy = CELL / 2;
+    // Pick a random cell that isn't the current one or the exit
+    let tc, tr;
+    do {
+      tc = Math.floor(Math.random() * mg.cols);
+      tr = Math.floor(Math.random() * mg.rows);
+    } while (tc === mg.ballCol && tr === mg.ballRow);
+
+    mg.ballCol = tc; mg.ballRow = tr;
+    mg.ballPx  = tc * CELL + CELL / 2;
+    mg.ballPy  = tr * CELL + CELL / 2;
     mg.moving  = false; mg.moveT = 0;
-    mg.camX    = 0;    mg.camY  = 0;
+
+    burst(mg.ballPx, mg.ballPy, '#ffb3c1', 18);
 
   } else if (type === 'freeze') {
     sfx.wall();
