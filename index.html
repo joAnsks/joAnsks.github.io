@@ -13,12 +13,31 @@
 
 <header>
   <h1>★ Pastel Bounce ★</h1>
-  <p>retro brick breaker</p>
+  <p id="header-sub">retro ball games</p>
 </header>
 
-<div id="hud">
+<!-- ── Game Select Screen ─────────────────────────────── -->
+<div id="game-select">
+  <p class="gs-title">CHOOSE A GAME</p>
+  <div class="gs-cards">
+    <button class="game-card" id="card-bounce">
+      <span class="gc-icon">🧱</span>
+      <span class="gc-name">BRICK<br>BREAKER</span>
+      <span class="gc-desc">Break all the bricks<br>before you run out of lives</span>
+    </button>
+    <button class="game-card" id="card-maze">
+      <span class="gc-icon">🌀</span>
+      <span class="gc-name">BALL<br>MAZE</span>
+      <span class="gc-desc">Navigate the maze<br>and beat your best time</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── In-game HUD (hidden until a game starts) ──────── -->
+<div id="hud" style="display:none">
+  <button class="back-btn" id="back-btn">◀ MENU</button>
   <div class="hud-item">
-    <span class="hud-label">SCORE</span>
+    <span class="hud-label" id="score-label">SCORE</span>
     <span class="hud-value" id="score-display">0</span>
   </div>
   <div class="hud-item">
@@ -30,12 +49,12 @@
     <span class="hud-value hearts" id="lives-display">♥♥♥</span>
   </div>
   <div class="hud-item">
-    <span class="hud-label">BEST</span>
+    <span class="hud-label" id="best-label">BEST</span>
     <span class="hud-value" id="best-display">0</span>
   </div>
 </div>
 
-<div id="canvas-wrap">
+<div id="canvas-wrap" style="display:none">
   <canvas id="game"></canvas>
   <div id="overlay">
     <h2 id="overlay-title">PASTEL BOUNCE</h2>
@@ -44,10 +63,11 @@
   </div>
 </div>
 
-<div id="powerup-bar">POWER-UPS: none</div>
+<div id="powerup-bar" style="display:none">POWER-UPS: none</div>
 
-<div id="controls-hint">
-  ← → ARROW KEYS &nbsp;|&nbsp; MOUSE / TOUCH &nbsp;|&nbsp; SPACE = PAUSE
+<div id="controls-hint" style="display:none">
+  <span id="hint-bounce">← → ARROW KEYS &nbsp;|&nbsp; MOUSE / TOUCH &nbsp;|&nbsp; SPACE = PAUSE</span>
+  <span id="hint-maze" style="display:none">WASD / ARROW KEYS &nbsp;|&nbsp; SPACE = PAUSE</span>
 </div>
 
 <script type="module" src="js/main.js"></script>

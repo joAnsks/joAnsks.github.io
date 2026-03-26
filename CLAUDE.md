@@ -7,7 +7,9 @@
 ## Overview
 
 **joAnsks's GitHub Pages site** — hosted at `https://joAnsks.github.io`.
-Contains a retro pastel brick-breaker game called **Pastel Bounce**.
+Contains two retro pastel mini-games accessible from a shared game-select screen:
+1. **Pastel Bounce** — brick-breaker
+2. **Ball Maze** — timed maze navigation with traps and power-ups
 
 ---
 
@@ -15,25 +17,37 @@ Contains a retro pastel brick-breaker game called **Pastel Bounce**.
 
 ```
 joAnsks.github.io/
-├── index.html          # HTML shell only — loads css/style.css + js/main.js
+├── index.html          # HTML shell — game-select + shared HUD/canvas
 ├── CLAUDE.md           # This file
 ├── README.md           # Minimal GitHub repo description
 ├── css/
-│   └── style.css       # All page + game styles (extracted from original inline <style>)
-└── js/                 # ES modules — loaded via <script type="module" src="js/main.js">
-    ├── state.js        # Shared canvas, constants, and mutable g{} state object
-    ├── audio.js        # Web Audio API setup, sfx object, unlockAudio
-    ├── particles.js    # burst() — pushes to g.particles
+│   └── style.css       # All page + game styles (includes game-card, back-btn)
+└── js/
+    ├── state.js        # Shared canvas, constants, mutable g{} (gameMode added)
+    ├── audio.js        # Web Audio API — sfx object, unlockAudio
+    ├── particles.js    # burst()
     ├── ball.js         # makeBall(), initBall()
-    ├── bricks.js       # LAYOUTS array, initBricks()
+    ├── bricks.js       # 11-layout LAYOUTS array, initBricks()
     ├── paddle.js       # initPad(), clampPad(), basePadW(), currentPadW()
-    ├── powerups.js     # PU_TYPES, randomPUType(), spawnDrop(), applyPU(), tickPUs()
-    ├── hud.js          # updateHUD(), showOverlay(), hideOverlay(), oBtn export
-    ├── input.js        # Keyboard / mouse / touch event listeners (side-effect module)
-    ├── draw.js         # draw(), shadeColor()
-    ├── update.js       # update(), ballHitsBrick(), handlers{} injection point
-    ├── transitions.js  # startGame(), nextLevel(), pause(), resume(), gameOver()
-    └── main.js         # Entry point: resize, loop, boot, button/space wiring
+    ├── powerups.js     # PU_TYPES, spawnDrop(), applyPU(), tickPUs()
+    ├── hud.js          # updateHUD(), updateMazeHUD(), setHUDMode(), formatTime(),
+    │                   #   showOverlay(), hideOverlay(), oBtn export
+    ├── input.js        # Keyboard/mouse/touch listeners (side-effect module)
+    ├── draw.js         # Bounce renderer: draw(), shadeColor()
+    ├── update.js       # Bounce logic: update(), handlers{} injection point
+    ├── transitions.js  # Bounce lifecycle: startGame(), nextLevel(), pause(),
+    │                   #   resume(), gameOver()
+    ├── main.js         # Entry point: game-select wiring, resize, game loop,
+    │                   #   space/overlay-btn handlers, bubble spawner
+    └── maze/
+        ├── gen.js      # generateMaze(cols, rows), mazeSize(level)
+        ├── state.js    # Isolated mg{} object (all maze mutable state)
+        ├── draw.js     # drawMaze(), exports CELL=40
+        ├── update.js   # updateMaze(), tryMove(), handleTrap(), handlePowerup(),
+        │               #   mazeUpdateHandlers{} injection point
+        └── game.js     # Maze lifecycle: startMazeGame(), mazeLevelComplete(),
+                        #   mazeGameOver(), mazePause(), mazeResume(),
+                        #   mazeHandlers{}, entity placement, localStorage
 ```
 
 ---
@@ -53,40 +67,56 @@ input.js          ← state                          (side-effect: registers lis
 draw.js           ← state
 update.js         ← state, audio, particles, powerups, paddle, ball
 transitions.js    ← state, paddle, ball, bricks, hud
-main.js           ← state, input, paddle, ball, bricks, hud, update, draw, transitions
+maze/gen.js       ← no game deps
+maze/state.js     ← no game deps
+maze/draw.js      ← state, maze/state
+maze/update.js    ← state, maze/state, audio, particles, hud, maze/draw
+maze/game.js      ← state, maze/state, maze/gen, maze/update, hud
+main.js           ← all of the above
 ```
 
-**Key pattern:** `update.js` needs `gameOver` and `nextLevel` from `transitions.js`, but
-`transitions.js` also imports from modules that `update.js` uses — to avoid a circular dep,
-those two functions are injected at runtime via `handlers` object in `main.js`:
-```js
-handlers.gameOver  = gameOver;
-handlers.nextLevel = nextLevel;
-```
+**Circular dep avoidance pattern** (used in both games):
+- `update.js` exports `handlers{}` (null-initialized), `main.js` injects `gameOver` / `nextLevel`
+- `maze/update.js` exports `mazeUpdateHandlers{}`, `maze/game.js` populates them at module load
 
 ---
 
 ## Shared State — `g` object (`js/state.js`)
 
-All mutable runtime values live here. Import `{ g }` from `./state.js` to read/write.
-
 | Property | Type | Description |
 |---|---|---|
+| `g.gameMode` | string\|null | `null` \| `'bounce'` \| `'maze'` |
 | `g.state` | string | `'idle'` \| `'playing'` \| `'paused'` \| `'dead'` |
-| `g.score` | number | Current score |
-| `g.best` | number | High score (persisted to `localStorage` key `pb_best`) |
-| `g.lives` | number | Lives remaining (max 5 with +LIFE power-up) |
-| `g.level` | number | Current level (increments on level clear) |
+| `g.score` | number | Bounce score |
+| `g.best` | number | Bounce high score (`localStorage` key `pb_best`) |
+| `g.lives` | number | Lives remaining |
+| `g.level` | number | Current level |
 | `g.shakeT` / `g.shakeAmt` | number | Screen shake countdown / magnitude |
-| `g.padX` / `g.padW` / `g.padWidened` | number | Paddle position, width, wide-mode timer |
-| `g.balls` | array | Active ball objects `{x, y, dx, dy, trail[]}` |
-| `g.bricks` | array | Brick objects `{x, y, color, pts, hp, maxHp, shimmer, alive, pu}` |
-| `g.drops` | array | Falling power-up capsules |
-| `g.particles` | array | Active burst particles |
-| `g.brickW` / `g.brickH` / `g.ROWS` | number | Set by `initBricks()` each level |
-| `g.activePUs` | object | Active power-up timers e.g. `{ slow: 300 }` |
-| `g.keys` | object | Keyboard state `{ ArrowLeft: true, … }` |
-| `g.mouseX` | number\|null | Mouse/touch X target for paddle smoothing |
+| `g.padX` / `g.padW` / `g.padWidened` | number | Paddle position, width, wide-timer |
+| `g.balls` / `g.bricks` / `g.drops` / `g.particles` | array | Game objects |
+| `g.brickW` / `g.brickH` / `g.ROWS` | number | Set by `initBricks()` |
+| `g.activePUs` | object | Active bounce power-up timers |
+| `g.keys` | object | Keyboard state — shared by both games |
+| `g.mouseX` | number\|null | Mouse/touch X for paddle |
+
+## Maze State — `mg` object (`js/maze/state.js`)
+
+Completely isolated from `g{}`. Key fields:
+
+| Property | Description |
+|---|---|
+| `mg.grid` | 2-D cell array `{walls:{N,S,E,W}}` from `generateMaze()` |
+| `mg.cols` / `mg.rows` | Maze dimensions |
+| `mg.ballCol` / `mg.ballRow` | Cell position |
+| `mg.ballPx` / `mg.ballPy` | Pixel centre (interpolated during animation) |
+| `mg.moving`, `mg.moveFrom`, `mg.moveTo`, `mg.moveT`, `mg.moveSpeed` | Animation state |
+| `mg.camX` / `mg.camY` | Camera pixel offset |
+| `mg.shielded`, `mg.frozen`, `mg.boosted` | Active effects |
+| `mg.freezeTimer` / `mg.boostTimer` | Effect countdown (frames) |
+| `mg.entities` | Array of `{col, row, type, hit}` |
+| `mg.startTime` / `mg.elapsed` / `mg._pausedAt` | Timer fields |
+| `mg.bestTimes` | `{[level]: ms}` — loaded/saved via `localStorage` key `maze_best` |
+| `mg.awaitingNextLevel` | True after level complete, cleared when next begins |
 
 ---
 
@@ -94,12 +124,11 @@ All mutable runtime values live here. Import `{ g }` from `./state.js` to read/w
 
 ### Gameplay
 - **Grid:** 10 cols × dynamic rows (grows with level, max 8)
-- **Control:** mouse, touch, or ← → / A D keys; Space = pause
+- **Control:** mouse, touch, ← → / A D; Space = pause
 - **Lives:** 3 (max 5 via +LIFE power-up); losing all → Game Over
-- **Levels:** clearing all bricks advances the level; ball speed scales with level
-- **High score:** persisted in `localStorage` (`pb_best`)
+- **Levels:** clearing all bricks advances; ball speed scales with level
 
-### Level Shapes (cycles every 11 levels)
+### Level Shapes (cycles every 11 levels via `(level-1) % 11`)
 | Level | Layout |
 |---|---|
 | 1 | Full grid |
@@ -122,51 +151,82 @@ All mutable runtime values live here. Import `{ g }` from `./state.js` to read/w
 | `slow` | Slows all balls for 500 ticks |
 | `life` | +1 life (max 5) |
 
-### Scoring
-- Bricks in bottom row = 10 pts × level; top row = ROWS × 10 pts × level
-- Level 3+: top 2 rows have 2 HP (cracked visually, half-score on first hit)
+---
+
+## Game: Ball Maze
+
+### Gameplay
+- **Goal:** navigate ball from (0,0) top-left to ★ exit at bottom-right
+- **Control:** WASD or arrow keys; Space = pause
+- **Lives:** 3; spike trap costs 1 life (respawn at start); game over at 0
+- **Timer:** `performance.now()` sub-ms accuracy; pause shifts `mg.startTime`
+- **Levels:** maze grows 7×7 → 9×9 → … → 25×25 then cycles (10 sizes)
+- **Best times:** saved per level in `localStorage` key `maze_best`
+
+### Maze Generation
+- Iterative DFS (recursive backtracker) in `maze/gen.js`
+- Cell walls: `{N, S, E, W}` — `true` = blocked
+
+### Entities (~10% of cells)
+| Icon | Type | Effect |
+|---|---|---|
+| ✕ | `spike` | –1 life, respawn at start (shield blocks) |
+| ❄ | `freeze` | Half speed for 3 s (shield blocks) |
+| ★ | `speed` | 2× speed for 5 s |
+| ♥ | `shield` | Absorbs next trap hit |
+
+---
+
+## UI Architecture
+
+### Game-Select Screen (`#game-select`)
+- Shown on load; two `.game-card` buttons (Brick Breaker, Ball Maze)
+- Clicking a card calls `startGame()` or `startMazeGame()`, shows HUD + canvas
+
+### HUD (`#hud`)
+- Hidden until a game starts
+- `◀ MENU` back button (`#back-btn`) returns to game-select
+- Score label dynamically switches: **SCORE** (bounce) ↔ **TIME** (maze) via `setHUDMode()`
+- Maze time shown as `ss.cs` or `m:ss.cs`
+
+### Overlay
+- Shared for both games: title, message, action button
+- Bounce: `oBtn` click → `resume()` / `startGame()`
+- Maze: `oBtn` click → `mazeHandlers.overlayBtn()` (state-dispatched)
 
 ---
 
 ## Design Choices
 
-### Color Palette (CSS custom properties in `css/style.css`)
+### Color Palette (CSS custom properties)
 | Variable | Hex | Used for |
 |---|---|---|
-| `--pink` | `#ffb3c1` | Bricks, bubbles, overlay title |
+| `--pink` | `#ffb3c1` | Bricks, spike entity, overlay title |
 | `--peach` | `#ffd6a5` | Bricks, bubbles |
-| `--mint` | `#b5ead7` | Bricks, button gradient |
-| `--blue` | `#bde0fe` | Bricks, paddle gradient, button |
-| `--lavend` | `#cdb4db` | Bricks, paddle gradient, HUD labels |
-| `--yellow` | `#fdffb6` | Bricks |
+| `--mint` | `#b5ead7` | Bricks, exit cell, button gradient |
+| `--blue` | `#bde0fe` | Bricks, freeze entity, button |
+| `--lavend` | `#cdb4db` | Bricks, walls, shield entity, HUD labels |
+| `--yellow` | `#fdffb6` | Bricks, speed entity |
 | `--bg` | `#fce4ec` | Page background |
-| `--panel` | `#fff0f6` | HUD panel |
+| `--panel` | `#fff0f6` | HUD panel, game cards |
 | `--shadow` | `#e0a8c0` | Borders, box shadows |
-| `--dark` | `#3d2b4e` | Headings, button borders |
-| Canvas bg | `#2a1533` | Dark purple — retro game feel |
+| `--dark` | `#3d2b4e` | Headings, button text |
+| Canvas bg | `#2a1533` | Dark purple — retro feel |
 
 ### Typography
-- **Font:** `Press Start 2P` (Google Fonts) — pixel/retro, used everywhere
+- **Font:** `Press Start 2P` (Google Fonts) — pixel/retro
 - Fluid sizing via `clamp()`
 
 ### Layout
-- Vertical flex column: header → HUD → canvas → power-up bar → controls hint
-- Canvas: max 560 × 440px, responsive via `resize()` in `main.js`
-- Overlay sits absolutely over canvas with blurred dark backdrop
-
-### Visual Effects
-- Header: animated pastel gradient (`@keyframes shimmer`)
-- Page background: floating CSS bubble `<div>`s (spawned in `main.js`)
-- Ball: motion trail (last 9 positions), radial glow, specular dot
-- Bricks: shimmer sine-wave highlight, crack lines when hp < maxHp, particle burst on break
-- Drops: pulsing glow shadow
-- Screen shake on life loss
+- Vertical flex column: header → game-select OR (HUD + canvas + bars)
+- Canvas: max 560 × 440px, responsive
+- Overlay: absolute over canvas, blurred dark backdrop
 
 ---
 
 ## Running Locally
 
-ES modules require HTTP — opening `index.html` directly via `file://` will fail.
+ES modules require HTTP — `file://` will fail.
 Use **VS Code Live Server** (right-click → Open with Live Server) or any local HTTP server.
 
 ---

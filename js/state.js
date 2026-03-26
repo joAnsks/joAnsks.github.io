@@ -20,6 +20,9 @@ export const PAD       = { h: 11, gap: 16, speed: 6 };
 // ── Shared mutable game state ────────────────────────────────────
 // All modules import this object and read/write its properties.
 export const g = {
+  // Top-level game mode
+  gameMode: null,  // null | 'bounce' | 'maze'
+
   // Game flow
   state: 'idle',   // 'idle' | 'playing' | 'paused' | 'dead'
   score: 0,

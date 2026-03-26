@@ -1,47 +1,115 @@
-import { g, canvas } from './state.js';
+import { g, canvas }              from './state.js';
 import './input.js';                              // registers keyboard/mouse/touch listeners
-import { initPad } from './paddle.js';
-import { initBall } from './ball.js';
-import { initBricks } from './bricks.js';
-import { updateHUD, oBtn } from './hud.js';
-import { update, handlers } from './update.js';
-import { draw } from './draw.js';
+import { initPad }                from './paddle.js';
+import { initBall }               from './ball.js';
+import { initBricks }             from './bricks.js';
+import { updateHUD, oBtn, setHUDMode } from './hud.js';
+import { update, handlers }       from './update.js';
+import { draw }                   from './draw.js';
 import { startGame, nextLevel, pause, resume, gameOver } from './transitions.js';
+import { drawMaze }               from './maze/draw.js';
+import { updateMaze }             from './maze/update.js';
+import { startMazeGame, mazePause, mazeResume, mazeHandlers } from './maze/game.js';
 
-// Inject transition handlers into update (avoids circular dep)
+// Inject transition handlers into bounce update (avoids circular dep)
 handlers.gameOver  = gameOver;
 handlers.nextLevel = nextLevel;
 
-// ── Canvas resize ────────────────────────────────────────────────
+// ── DOM refs ──────────────────────────────────────────────────
+const gameSelect  = document.getElementById('game-select');
+const hud         = document.getElementById('hud');
+const canvasWrap  = document.getElementById('canvas-wrap');
+const powerupBar  = document.getElementById('powerup-bar');
+const controlHint = document.getElementById('controls-hint');
+const backBtn     = document.getElementById('back-btn');
+const cardBounce  = document.getElementById('card-bounce');
+const cardMaze    = document.getElementById('card-maze');
+
+// ── Canvas resize ─────────────────────────────────────────────
 function resize() {
   canvas.width  = Math.floor(Math.min(window.innerWidth - 32, 560));
   canvas.height = Math.floor(Math.min(window.innerHeight * 0.6, 440));
 }
 resize();
-window.addEventListener('resize', () => { resize(); initBricks(); });
+window.addEventListener('resize', () => {
+  resize();
+  if (g.gameMode === 'bounce') initBricks();
+});
 
-// ── Space key (pause / resume) ───────────────────────────────────
+// ── Show/hide UI for a given mode ─────────────────────────────
+function showGameUI(mode) {
+  gameSelect.style.display  = 'none';
+  hud.style.display         = 'flex';
+  canvasWrap.style.display  = '';
+  controlHint.style.display = '';
+  if (mode === 'bounce') {
+    powerupBar.style.display = '';
+  }
+  setHUDMode(mode);
+}
+
+function showSelectScreen() {
+  gameSelect.style.display  = '';
+  hud.style.display         = 'none';
+  canvasWrap.style.display  = 'none';
+  powerupBar.style.display  = 'none';
+  controlHint.style.display = 'none';
+  g.gameMode = null;
+  g.state    = 'idle';
+}
+
+// ── Game-select card handlers ─────────────────────────────────
+cardBounce.addEventListener('click', () => {
+  g.gameMode = 'bounce';
+  showGameUI('bounce');
+  initPad(); initBall(); initBricks();
+  updateHUD();
+  startGame();
+});
+
+cardMaze.addEventListener('click', () => {
+  g.gameMode = 'maze';
+  showGameUI('maze');
+  startMazeGame();
+});
+
+// ── Back to menu ─────────────────────────────────────────────
+backBtn.addEventListener('click', () => {
+  showSelectScreen();
+});
+
+// ── Space key (pause / resume) ───────────────────────────────
 window.addEventListener('keydown', e => {
   if (e.key === ' ') {
     e.preventDefault();
-    if (g.state === 'playing') pause();
-    else if (g.state === 'paused') resume();
+    if (g.gameMode === 'bounce') {
+      if (g.state === 'playing') pause();
+      else if (g.state === 'paused') resume();
+    } else if (g.gameMode === 'maze') {
+      if (g.state === 'playing') mazePause();
+      else if (g.state === 'paused') mazeResume();
+    }
   }
 });
 
-// ── Overlay button ───────────────────────────────────────────────
+// ── Overlay button ────────────────────────────────────────────
 oBtn.addEventListener('click', () => {
+  if (g.gameMode === 'maze') {
+    mazeHandlers.overlayBtn();
+    return;
+  }
+  // bounce
   if (g.state === 'paused') resume();
-  else if (g.state === 'idle') resume();  // level-advance overlay — just unpause, don't reset
+  else if (g.state === 'idle') resume();   // level-advance overlay
   else startGame();
 });
 
-// ── Background bubbles ───────────────────────────────────────────
+// ── Background bubbles ───────────────────────────────────────
 (function spawnBubbles() {
   const container = document.getElementById('bubbles');
   const colors    = ['#ffb3c1', '#cdb4db', '#bde0fe', '#b5ead7', '#ffd6a5'];
   for (let i = 0; i < 22; i++) {
-    const d    = document.createElement('div');
+    const d = document.createElement('div');
     d.className = 'bubble';
     const size  = 18 + Math.random() * 58;
     d.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;bottom:-80px;` +
@@ -52,13 +120,15 @@ oBtn.addEventListener('click', () => {
   }
 })();
 
-// ── Game loop ────────────────────────────────────────────────────
+// ── Game loop ────────────────────────────────────────────────
 function loop() {
-  if (g.state === 'playing') { update(); draw(); }
+  if (g.state === 'playing') {
+    if (g.gameMode === 'bounce') { update(); draw(); }
+    else if (g.gameMode === 'maze') { updateMaze(); drawMaze(); }
+  }
   requestAnimationFrame(loop);
 }
 
-// ── Boot ─────────────────────────────────────────────────────────
+// ── Boot ─────────────────────────────────────────────────────
 initPad(); initBall(); initBricks();
-updateHUD();
 loop();
