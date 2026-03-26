@@ -22,8 +22,12 @@ const _SCARE_IMGS = [
 
 const _jumpscareEl = document.getElementById('jumpscare');
 const _jumpscareImg = document.getElementById('jumpscare-img');
+let _lastScareIdx = -1;
 function showJumpscare() {
-  _jumpscareImg.src = _SCARE_IMGS[Math.floor(Math.random() * _SCARE_IMGS.length)];
+  let idx;
+  do { idx = Math.floor(Math.random() * _SCARE_IMGS.length); } while (idx === _lastScareIdx);
+  _lastScareIdx = idx;
+  _jumpscareImg.src = _SCARE_IMGS[idx];
   _jumpscareEl.classList.add('active');
   setTimeout(() => _jumpscareEl.classList.remove('active'), 1200);
 }
