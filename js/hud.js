@@ -1,4 +1,5 @@
 import { g } from './state.js';
+import { shareScore } from './share.js';
 
 // ── Bounce HUD ────────────────────────────────────────────────
 export function updateHUD() {
@@ -66,18 +67,23 @@ const oMsg     = document.getElementById('overlay-msg');
 export const oBtn = document.getElementById('overlay-btn');
 const oShare   = document.getElementById('share-btn');
 
-const SITE_URL = 'https://joAnsks.github.io';
+let _pendingShare = null; // { shareText, gameName }
 
-export function showOverlay(title, msg, btnTxt, shareText) {
+oShare.addEventListener('click', () => {
+  if (_pendingShare) shareScore(_pendingShare.shareText, _pendingShare.gameName);
+});
+
+export function showOverlay(title, msg, btnTxt, shareText, gameName) {
   oTitle.textContent    = title;
   oMsg.innerHTML        = msg;
   oBtn.textContent      = btnTxt;
   overlay.style.display = 'flex';
 
   if (shareText) {
-    oShare.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}&quote=${encodeURIComponent(shareText)}`;
+    _pendingShare        = { shareText, gameName: gameName || 'Pastel Bounce' };
     oShare.style.display = '';
   } else {
+    _pendingShare        = null;
     oShare.style.display = 'none';
   }
 }
@@ -85,4 +91,5 @@ export function showOverlay(title, msg, btnTxt, shareText) {
 export function hideOverlay() {
   overlay.style.display = 'none';
   oShare.style.display  = 'none';
+  _pendingShare         = null;
 }

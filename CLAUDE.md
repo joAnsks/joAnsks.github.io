@@ -30,6 +30,7 @@ joAnsks.github.io/
     ├── bricks.js       # 11-layout LAYOUTS array, initBricks()
     ├── paddle.js       # initPad(), clampPad(), basePadW(), currentPadW()
     ├── powerups.js     # PU_TYPES, spawnDrop(), applyPU(), tickPUs()
+    ├── share.js        # shareScore(), generateScoreCard() — Web Share API + FB fallback
     ├── hud.js          # updateHUD(), updateMazeHUD(), setHUDMode(), formatTime(),
     │                   #   showOverlay(), hideOverlay(), oBtn export
     ├── input.js        # Keyboard/mouse/touch listeners (side-effect module)
@@ -61,7 +62,8 @@ particles.js      ← state
 ball.js           ← state
 paddle.js         ← state
 bricks.js         ← state
-hud.js            ← state
+share.js          ← no game deps
+hud.js            ← state, share
 powerups.js       ← state, audio, ball, paddle
 input.js          ← state                          (side-effect: registers listeners)
 draw.js           ← state
@@ -193,10 +195,20 @@ Completely isolated from `g{}`. Key fields:
 - Shared for both games: title, message, action button
 - Bounce: `oBtn` click → `resume()` / `startGame()`
 - Maze: `oBtn` click → `mazeHandlers.overlayBtn()` (state-dispatched)
-- `showOverlay(title, msg, btnTxt, shareText?)` — optional 4th arg shows `#share-btn`
-- `#share-btn` (`<a>`) opens Facebook sharer in new tab; hidden when `shareText` is omitted
+- `showOverlay(title, msg, btnTxt, shareText?, gameName?)` — optional 4th/5th args show `#share-btn`
+- `#share-btn` (`<button>`) click calls `shareScore(shareText, gameName)` from `js/share.js`
 - Share button shown on: Bounce Game Over, Maze Level Clear, Maze Game Over
 - Share button hidden on: pause, resume, intro, next-level overlays
+
+### Share (`js/share.js`)
+- `shareScore(shareText, gameName)` — generates a 1200×630 score card canvas image, then:
+  1. **Web Share API** with image file (mobile / modern desktop Chrome) — native share sheet
+  2. **Fallback**: opens Facebook sharer popup (`/sharer/sharer.php?u=&quote=`)
+- `generateScoreCard(shareText, gameName)` — draws pastel-themed card on a hidden `<canvas>`:
+  - Dark purple background + diagonal gradient sheen + rounded lavender border
+  - Game name in pink (`--pink`), score text in yellow (`--yellow`), footer URL in mint
+  - Uses `document.fonts.load()` to ensure Press Start 2P is available; falls back to monospace
+  - Returns a `File` (PNG blob) for Web Share API
 
 ---
 
