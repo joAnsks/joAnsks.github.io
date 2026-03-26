@@ -119,6 +119,11 @@ Completely isolated from `g{}`. Key fields:
 | `mg.startTime` / `mg.elapsed` / `mg._pausedAt` | Timer fields |
 | `mg.bestTimes` | `{[level]: ms}` — loaded/saved via `localStorage` key `maze_best` |
 | `mg.awaitingNextLevel` | True after level complete, cleared when next begins |
+| `mg.chaserCol` / `mg.chaserRow` | Chaser cell position |
+| `mg.chaserPx` / `mg.chaserPy` | Chaser pixel centre (interpolated) |
+| `mg.chaserMoving`, `mg.chaserMoveFrom`, `mg.chaserMoveTo`, `mg.chaserMoveT` | Chaser animation state |
+| `mg.chaserSpeed` | Step fraction per frame; ramps from 0.07 → 0.11 with level |
+| `mg.chaserDelay` | Countdown frames before chaser activates (600 = 10 s) |
 
 ---
 
@@ -160,7 +165,8 @@ Completely isolated from `g{}`. Key fields:
 ### Gameplay
 - **Goal:** navigate ball from (0,0) top-left to ★ exit at bottom-right
 - **Control:** WASD or arrow keys; Space = pause; swipe on canvas (mobile)
-- **Lives:** 3; spike trap costs 1 life (respawn at start); game over at 0
+- **Lives:** 3; losing all → Game Over
+- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life and resets chaser to (0,0) with a 2 s grace period
 - **Timer:** `performance.now()` sub-ms accuracy; pause shifts `mg.startTime`
 - **Levels:** maze grows 7×7 → 9×9 → … → 25×25 then cycles (10 sizes)
 - **Best times:** saved per level in `localStorage` key `maze_best`
@@ -172,7 +178,7 @@ Completely isolated from `g{}`. Key fields:
 ### Entities (~10% of cells)
 | Icon | Type | Effect |
 |---|---|---|
-| ✕ | `spike` | –1 life, respawn at start (shield blocks) |
+| ⟳ | `teleport` | Warps ball to random cell (shield blocks) |
 | ❄ | `freeze` | Half speed for 3 s (shield blocks) |
 | ★ | `speed` | 2× speed for 5 s |
 | ♥ | `shield` | Absorbs next trap hit |

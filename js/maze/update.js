@@ -119,10 +119,10 @@ function updateChaser() {
         g.lives--;
         updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
         if (g.lives <= 0) { mazeUpdateHandlers.gameOver(); return; }
-        // Reset chaser to its starting corner with a grace period
-        mg.chaserCol    = mg.cols - 1;
+        // Reset chaser to start position with a grace period
+        mg.chaserCol    = 0;
         mg.chaserRow    = 0;
-        mg.chaserPx     = mg.chaserCol * CELL + CELL / 2;
+        mg.chaserPx     = CELL / 2;
         mg.chaserPy     = CELL / 2;
         mg.chaserMoving = false;
         mg.chaserMoveT  = 0;

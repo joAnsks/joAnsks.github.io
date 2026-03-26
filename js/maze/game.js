@@ -104,15 +104,15 @@ function initMazeLevel() {
 
   placeEntities(cols, rows);
 
-  // Place chaser at top-right corner, opposite to player start
-  mg.chaserCol      = cols - 1;
+  // Place chaser at same start as ball (0,0); activates after 10 s
+  mg.chaserCol      = 0;
   mg.chaserRow      = 0;
-  mg.chaserPx       = (cols - 1) * 40 + 20;  // 40 = CELL, 20 = CELL/2
+  mg.chaserPx       = 20;  // CELL/2
   mg.chaserPy       = 20;
   mg.chaserMoving   = false;
   mg.chaserMoveT    = 0;
   mg.chaserSpeed    = Math.min(0.07 + (g.level - 1) * 0.004, 0.11);  // ramps up with level
-  mg.chaserDelay    = 180;  // 3 s head start
+  mg.chaserDelay    = 600;  // 10 s head start
 
   mg.startTime = performance.now();
   mg.elapsed   = 0;
@@ -134,7 +134,7 @@ export function startMazeGame() {
     'Reach the ★ exit to complete each level.<br><br>' +
     '⟳ teleport warps you &nbsp;|&nbsp; ❄ slows you<br>' +
     '★ speed boost &nbsp;|&nbsp; ♥ shield<br><br>' +
-    'A red chaser hunts you — don\'t get caught!<br><br>' +
+    'A red chaser starts with you — it chases after 10 s!<br><br>' +
     'WASD or ARROW KEYS to move.<br>SPACE to pause.',
     'START ▶'
   );
