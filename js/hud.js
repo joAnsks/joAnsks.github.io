@@ -60,18 +60,29 @@ export function setHUDMode(mode) {
 }
 
 // ── Overlay ───────────────────────────────────────────────────
-const overlay = document.getElementById('overlay');
-const oTitle  = document.getElementById('overlay-title');
-const oMsg    = document.getElementById('overlay-msg');
+const overlay  = document.getElementById('overlay');
+const oTitle   = document.getElementById('overlay-title');
+const oMsg     = document.getElementById('overlay-msg');
 export const oBtn = document.getElementById('overlay-btn');
+const oShare   = document.getElementById('share-btn');
 
-export function showOverlay(title, msg, btnTxt) {
+const SITE_URL = 'https://joAnsks.github.io';
+
+export function showOverlay(title, msg, btnTxt, shareText) {
   oTitle.textContent    = title;
   oMsg.innerHTML        = msg;
   oBtn.textContent      = btnTxt;
   overlay.style.display = 'flex';
+
+  if (shareText) {
+    oShare.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}&quote=${encodeURIComponent(shareText)}`;
+    oShare.style.display = '';
+  } else {
+    oShare.style.display = 'none';
+  }
 }
 
 export function hideOverlay() {
   overlay.style.display = 'none';
+  oShare.style.display  = 'none';
 }

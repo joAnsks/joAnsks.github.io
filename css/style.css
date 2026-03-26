@@ -120,6 +120,16 @@ canvas { display: block; }
 .btn:hover  { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--dark); }
 .btn:active { transform: translate(2px,2px);   box-shadow: 1px 1px 0 var(--dark); }
 
+.share-fb-btn {
+  text-decoration: none;
+  background: linear-gradient(135deg, #1877f2, #0c5dc7);
+  color: #fff;
+  border-color: #0a4da0;
+  box-shadow: 3px 3px 0 #0a4da0;
+}
+.share-fb-btn:hover  { box-shadow: 4px 4px 0 #0a4da0; }
+.share-fb-btn:active { box-shadow: 1px 1px 0 #0a4da0; }
+
 #powerup-bar {
   display: flex;
   gap: 10px;

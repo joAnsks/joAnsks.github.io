@@ -193,6 +193,10 @@ Completely isolated from `g{}`. Key fields:
 - Shared for both games: title, message, action button
 - Bounce: `oBtn` click → `resume()` / `startGame()`
 - Maze: `oBtn` click → `mazeHandlers.overlayBtn()` (state-dispatched)
+- `showOverlay(title, msg, btnTxt, shareText?)` — optional 4th arg shows `#share-btn`
+- `#share-btn` (`<a>`) opens Facebook sharer in new tab; hidden when `shareText` is omitted
+- Share button shown on: Bounce Game Over, Maze Level Clear, Maze Game Over
+- Share button hidden on: pause, resume, intro, next-level overlays
 
 ---
 

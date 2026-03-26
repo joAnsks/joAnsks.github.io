@@ -103,7 +103,8 @@ export function mazeLevelComplete() {
   showOverlay(
     'LEVEL CLEAR!',
     `Time: ${timeStr}<br>Best: ${bestStr}<br><br>Level ${g.level} complete!`,
-    'NEXT LEVEL ▶'
+    'NEXT LEVEL ▶',
+    `I cleared level ${g.level} of Ball Maze in ${timeStr}! 🌀 Play at joAnsks.github.io`
   );
 }
 
@@ -113,7 +114,8 @@ export function mazeGameOver() {
   showOverlay(
     'GAME OVER',
     `You reached level ${g.level}.<br><br>Better luck next time!`,
-    'TRY AGAIN ▶'
+    'TRY AGAIN ▶',
+    `I reached level ${g.level} in Ball Maze! 🌀 Can you go further? Play at joAnsks.github.io`
   );
 }
 

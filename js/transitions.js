@@ -38,6 +38,7 @@ export function gameOver() {
   showOverlay(
     'GAME OVER',
     `Final score: ${g.score}<br><br>${g.score >= g.best && g.score > 0 ? '✦ New Best! ✦' : `Best: ${g.best}`}`,
-    'PLAY AGAIN ▶'
+    'PLAY AGAIN ▶',
+    `I scored ${g.score} in Pastel Bounce! 🧱 Can you beat me? Play at joAnsks.github.io`
   );
 }
