@@ -74,7 +74,7 @@ function placeEntities(cols, rows) {
   };
 
   const TRAP_TYPES = new Set(['teleport', 'slow']);
-  const density    = 0.10;  // ~10% of cells get an entity
+  const density    = 0.06;  // ~6% of cells get an entity
   const total      = Math.floor(cols * rows * density);
 
   // Traps must never sit on the only path from start to exit

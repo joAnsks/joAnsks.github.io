@@ -177,7 +177,7 @@ Completely isolated from `g{}`. Key fields:
 - Iterative DFS (recursive backtracker) in `maze/gen.js`
 - Cell walls: `{N, S, E, W}` — `true` = blocked
 
-### Entities (~10% of cells)
+### Entities (~6% of cells)
 Entity pool (weighted, sums to 100 at normal lives):
 
 | Icon | Type | Kind | Weight (normal / last life) | Effect |
