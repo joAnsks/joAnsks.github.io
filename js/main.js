@@ -10,6 +10,9 @@ import { startGame, nextLevel, pause, resume, gameOver } from './transitions.js'
 import { drawMaze }               from './maze/draw.js';
 import { updateMaze }             from './maze/update.js';
 import { startMazeGame, mazePause, mazeResume, mazeHandlers } from './maze/game.js';
+import { drawBloom }              from './bloom/draw.js';
+import { updateBloom }            from './bloom/update.js';
+import { startBloomGame, bloomPause, bloomResume, bloomHandlers } from './bloom/game.js';
 import { stopChaserMusic } from './audio.js';
 
 // Inject transition handlers into bounce update (avoids circular dep)
@@ -25,6 +28,7 @@ const controlHint = document.getElementById('controls-hint');
 const backBtn     = document.getElementById('back-btn');
 const cardBounce  = document.getElementById('card-bounce');
 const cardMaze    = document.getElementById('card-maze');
+const cardBloom   = document.getElementById('card-bloom');
 
 // ── Canvas resize ─────────────────────────────────────────────
 function resize() {
@@ -74,6 +78,12 @@ cardMaze.addEventListener('click', () => {
   startMazeGame();
 });
 
+cardBloom.addEventListener('click', () => {
+  g.gameMode = 'bloom';
+  showGameUI('bloom');
+  startBloomGame();
+});
+
 // ── Back to menu ─────────────────────────────────────────────
 backBtn.addEventListener('click', () => {
   stopChaserMusic();
@@ -90,6 +100,9 @@ window.addEventListener('keydown', e => {
     } else if (g.gameMode === 'maze') {
       if (g.state === 'playing') mazePause();
       else if (g.state === 'paused') mazeResume();
+    } else if (g.gameMode === 'bloom') {
+      if (g.state === 'playing') bloomPause();
+      else if (g.state === 'paused') bloomResume();
     }
   }
 });
@@ -98,6 +111,10 @@ window.addEventListener('keydown', e => {
 oBtn.addEventListener('click', () => {
   if (g.gameMode === 'maze') {
     mazeHandlers.overlayBtn();
+    return;
+  }
+  if (g.gameMode === 'bloom') {
+    bloomHandlers.overlayBtn();
     return;
   }
   // bounce
@@ -127,6 +144,7 @@ function loop() {
   if (g.state === 'playing') {
     if (g.gameMode === 'bounce') { update(); draw(); }
     else if (g.gameMode === 'maze') { updateMaze(); drawMaze(); }
+    else if (g.gameMode === 'bloom') { updateBloom(); drawBloom(); }
   }
   requestAnimationFrame(loop);
 }

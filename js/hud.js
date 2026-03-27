@@ -1,4 +1,5 @@
-import { g } from './state.js';
+import { g }          from './state.js';
+import { bg }         from './bloom/state.js';
 import { shareScore } from './share.js';
 
 // ── Bounce HUD ────────────────────────────────────────────────
@@ -38,6 +39,15 @@ export function formatTime(ms) {
   return m > 0 ? `${m}:${s}.${cs}` : `${s}.${cs}`;
 }
 
+// ── Bloom HUD ──────────────────────────────────────────────────
+export function updateBloomHUD() {
+  document.getElementById('score-display').textContent = bg.score;
+  document.getElementById('level-display').textContent = g.level;
+  document.getElementById('lives-display').textContent = '♥'.repeat(Math.max(0, g.lives));
+  const best = bg.bestScores[g.level];
+  document.getElementById('best-display').textContent  = best != null ? best : 0;
+}
+
 // ── Mode switcher ─────────────────────────────────────────────
 export function setHUDMode(mode) {
   const scoreLabel = document.getElementById('score-label');
@@ -45,6 +55,7 @@ export function setHUDMode(mode) {
   const puBar      = document.getElementById('powerup-bar');
   const hintBounce = document.getElementById('hint-bounce');
   const hintMaze   = document.getElementById('hint-maze');
+  const hintBloom  = document.getElementById('hint-bloom');
 
   if (mode === 'maze') {
     if (scoreLabel) scoreLabel.textContent = 'TIME';
@@ -52,12 +63,21 @@ export function setHUDMode(mode) {
     if (puBar)      puBar.style.display    = 'none';
     if (hintBounce) hintBounce.style.display = 'none';
     if (hintMaze)   hintMaze.style.display   = '';
+    if (hintBloom)  hintBloom.style.display  = 'none';
+  } else if (mode === 'bloom') {
+    if (scoreLabel) scoreLabel.textContent = 'SCORE';
+    if (bestLabel)  bestLabel.textContent  = 'BEST';
+    if (puBar)      puBar.style.display    = 'none';
+    if (hintBounce) hintBounce.style.display = 'none';
+    if (hintMaze)   hintMaze.style.display   = 'none';
+    if (hintBloom)  hintBloom.style.display  = '';
   } else {
     if (scoreLabel) scoreLabel.textContent = 'SCORE';
     if (bestLabel)  bestLabel.textContent  = 'BEST';
     if (puBar)      puBar.style.display    = '';
     if (hintBounce) hintBounce.style.display = '';
     if (hintMaze)   hintMaze.style.display   = 'none';
+    if (hintBloom)  hintBloom.style.display  = 'none';
   }
 }
 
