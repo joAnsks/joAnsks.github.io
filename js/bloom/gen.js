@@ -32,7 +32,15 @@ export function generateCushions(level, W, H) {
       }
       if (overlap) continue;
 
-      result.push({ x, y, r, color });
+      // Stagger initial visibleTimer so cushions don't all vanish at once
+      const stagger = i * 70 + Math.floor(Math.random() * 60);
+      result.push({
+        x, y, r, color,
+        visible:      true,
+        visibleTimer: 220 + stagger,   // how many frames left showing
+        hiddenTimer:  0,               // how many frames left hidden
+        fadeT:        1.0,             // 0=hidden, 1=visible (smooth)
+      });
       placed = true;
       break;
     }

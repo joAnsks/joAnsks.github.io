@@ -155,23 +155,24 @@ export function drawBloom() {
     ctx.restore();
   }
 
-  // 3. Cushions
+  // 3. Cushions (fade in/out based on c.fadeT)
   for (let i = 0; i < bg.cushions.length; i++) {
     const c     = bg.cushions[i];
+    if (c.fadeT <= 0) continue;
     const pulse = 0.6 + 0.4 * Math.sin(bg.frame / 30 + i * 1.2);
 
     ctx.save();
     ctx.shadowColor = c.color;
-    ctx.shadowBlur  = 12 * pulse;
+    ctx.shadowBlur  = 12 * pulse * c.fadeT;
 
     // Outer ring
     ctx.strokeStyle = c.color;
     ctx.lineWidth   = 3;
-    ctx.globalAlpha = 0.8;
+    ctx.globalAlpha = 0.8 * c.fadeT;
     ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, TAU); ctx.stroke();
 
     // Inner fill
-    ctx.globalAlpha = 0.12 + 0.1 * pulse;
+    ctx.globalAlpha = (0.12 + 0.1 * pulse) * c.fadeT;
     ctx.fillStyle   = c.color;
     ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, TAU); ctx.fill();
 

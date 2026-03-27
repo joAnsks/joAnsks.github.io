@@ -11,11 +11,17 @@ let _updateBloomHUD = null;
 export function setBloomHUDUpdater(fn) { _updateBloomHUD = fn; }
 
 // ── Physics constants ─────────────────────────────────────────────────────────
-const PLAYER_ACCEL     = 0.4;   // acceleration per frame when key held
-const PLAYER_FRICTION  = 0.88;  // damping per frame when no input on that axis
-const PLAYER_MAX_SPEED = 4.0;   // px/frame cap for main ball
+const PLAYER_ACCEL     = 0.32;  // acceleration per frame when key held (was 0.4)
+const PLAYER_FRICTION  = 0.84;  // damping per frame when no input on that axis (was 0.88)
+const PLAYER_MAX_SPEED = 3.2;   // px/frame cap for main ball (was 4.0)
 const MINI_MIN_SPEED   = 1.5;   // mini-balls never stop
 const MINI_MAX_SPEED   = 5.0;
+const DRIFT_STRENGTH   = 0.06;  // ambient current that slowly rotates direction
+
+// ── Cushion timing constants ──────────────────────────────────────────────────
+const CUSHION_VISIBLE_DUR  = 240;  // frames visible (4 s)
+const CUSHION_HIDDEN_DUR   = 150;  // frames hidden (2.5 s)
+const CUSHION_FADE_FRAMES  = 25;   // frames to fade in or out
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function clampSpeedPlayer(b) {
@@ -63,6 +69,29 @@ function weightedCatAction() {
   return 'eat';
 }
 
+// ── Cushion visibility cycling ────────────────────────────────────────────────
+function updateCushions() {
+  for (const c of bg.cushions) {
+    if (c.visible) {
+      c.visibleTimer--;
+      // Fade in from start
+      c.fadeT = Math.min(1, c.fadeT + 1 / CUSHION_FADE_FRAMES);
+      if (c.visibleTimer <= 0) {
+        c.visible     = false;
+        c.hiddenTimer = CUSHION_HIDDEN_DUR;
+      }
+    } else {
+      c.hiddenTimer--;
+      // Fade out
+      c.fadeT = Math.max(0, c.fadeT - 1 / CUSHION_FADE_FRAMES);
+      if (c.hiddenTimer <= 0) {
+        c.visible     = true;
+        c.visibleTimer = CUSHION_VISIBLE_DUR;
+      }
+    }
+  }
+}
+
 // ── Player input → main ball ──────────────────────────────────────────────────
 function applyPlayerInput(b) {
   const kLeft  = g.keys['ArrowLeft']  || g.keys['a'] || g.keys['A'];
@@ -81,6 +110,11 @@ function applyPlayerInput(b) {
   // Axis friction when no key pressed on that axis
   if (!kLeft && !kRight) b.vx *= PLAYER_FRICTION;
   if (!kUp   && !kDown)  b.vy *= PLAYER_FRICTION;
+
+  // Ambient drift — a gentle current whose direction rotates over time
+  const driftAngle = bg.frame / 320;
+  b.vx += Math.cos(driftAngle) * DRIFT_STRENGTH;
+  b.vy += Math.sin(driftAngle) * DRIFT_STRENGTH;
 
   // Mouse pull — only when keyboard is idle (so mouse doesn't fight keys)
   if (!anyKey && bg.mouseX != null && bg.mouseY != null) {
@@ -137,8 +171,9 @@ function updateBalls() {
 
     b.age++;
 
-    // Cushion collisions
+    // Cushion collisions (only with cushions that are at least half visible)
     for (const c of bg.cushions) {
+      if (c.fadeT < 0.5) continue;
       const dx   = b.x - c.x;
       const dy   = b.y - c.y;
       const dist = Math.hypot(dx, dy);
@@ -352,6 +387,7 @@ export function updateBloom() {
   bg.frame++;
   bg.elapsed = performance.now() - bg.startTime;
 
+  updateCushions();
   updateBalls();
   checkNodeActivation();
   updateCat();

@@ -152,7 +152,7 @@ Completely isolated from `g{}` and `mg{}`. Key fields:
 | Property | Description |
 |---|---|
 | `bg.balls` | Array of `{x, y, vx, vy, r, isMain, age, color, stunned, stunnedT}` |
-| `bg.cushions` | Array of `{x, y, r, color}` — bumper pads that spawn child-balls |
+| `bg.cushions` | Array of `{x, y, r, color, visible, visibleTimer, hiddenTimer, fadeT}` — bumper pads that spawn child-balls; cycle visible↔hidden with smooth fade |
 | `bg.pathNodes` | Array of `{x, y, r, activated, side:'N'|'S'|'E'|'W', glowT}` — hidden wall triggers |
 | `bg.pathActivated` / `bg.pathTotal` | Progress toward level completion |
 | `bg.cat` | Object with `phase`, position, `action`, `timer`, `cooldown`, paw animation fields |
@@ -233,8 +233,9 @@ Traps never placed on the solution path.
 - **Goal:** trigger all hidden path nodes along the canvas walls to advance the level
 - **Control:** WASD / arrow keys steer the main ball (acceleration + friction model); mouse cursor pulls the ball when no keys held; swipe on canvas (mobile); SPACE = pause
 - **Lives:** 3; losing all → Game Over
+- **Ball physics (harder):** accel `0.32`, friction `0.84`, max speed `3.2` px/frame; an ambient drift (strength `0.06`, direction rotates over ~5 s) constantly nudges the ball — requires active correction
 - **Balls:** player steers the main ball (starts at rest); hitting cushions spawns a mini child-ball at the cushion centre; mini-balls grow (`r: 5 → 14` at `+0.02/frame`) and bounce autonomously; full-size minis can also spawn children; max 12 balls total
-- **Cushions:** `2 + level` bumper pads (rejection-sampled: ≥60 px from edges, ≥80 px from centre, no overlaps); each cushion hit reflects velocity + small outward impulse + spawns child ball + `+10` score
+- **Cushions:** `2 + level` bumper pads (rejection-sampled: ≥60 px from edges, ≥80 px from centre, no overlaps); each cushion cycles visible (4 s) → hidden (2.5 s) with a 0.4 s fade; collisions only register when `fadeT ≥ 0.5`; cushions start staggered so they don't all vanish simultaneously; each hit reflects velocity + small outward impulse + spawns child ball + `+10` score
 - **Path nodes:** `3 + level` nodes distributed evenly along the four canvas wall edges; initially faint (alpha 0.12); a ball passing within 18 px activates the node (glow + burst + `+50` score); all activated → level complete
 - **Cat:** visits every `max(240, 600 − (level−1)×30)` frames; enters from a random edge, slides to centre, performs an action, retreats:
   - **Squash** (35%): always targets the player's main ball — stuns it for 60 frames (squashed ellipse) and costs 1 life; game over when lives reach 0
