@@ -44,8 +44,9 @@ export function updateBloomHUD() {
   document.getElementById('score-display').textContent = bg.score;
   document.getElementById('level-display').textContent = g.level;
   document.getElementById('lives-display').textContent = '♥'.repeat(Math.max(0, g.lives));
-  const best = bg.bestScores[g.level];
-  document.getElementById('best-display').textContent  = best != null ? best : 0;
+  const newBest = Math.max(bg.best, bg.score);
+  if (newBest > bg.best) { bg.best = newBest; try { localStorage.setItem('bloom_best', String(bg.best)); } catch (_) {} }
+  document.getElementById('best-display').textContent  = bg.best;
 }
 
 // ── Mode switcher ─────────────────────────────────────────────

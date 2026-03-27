@@ -21,20 +21,19 @@ canvas.addEventListener('mouseleave', () => { bg.mouseX = null; bg.mouseY = null
 
 const LS_KEY = 'bloom_best';
 
-function loadBestScores() {
+function loadBest() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    bg.bestScores = raw ? JSON.parse(raw) : {};
+    bg.best = raw ? +raw || 0 : 0;
   } catch (_) {
-    bg.bestScores = {};
+    bg.best = 0;
   }
 }
 
-function saveBestScore(level, score) {
-  const prev = bg.bestScores[level];
-  if (prev == null || score > prev) {
-    bg.bestScores[level] = score;
-    try { localStorage.setItem(LS_KEY, JSON.stringify(bg.bestScores)); } catch (_) {}
+function saveBest(score) {
+  if (score > bg.best) {
+    bg.best = score;
+    try { localStorage.setItem(LS_KEY, String(bg.best)); } catch (_) {}
   }
 }
 
@@ -87,7 +86,7 @@ function initBloomLevel() {
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 export function startBloomGame() {
-  loadBestScores();
+  loadBest();
   g.lives = 3;
   g.level = 1;
   bg.score = 0;
@@ -110,10 +109,9 @@ export function startBloomGame() {
 export function bloomLevelComplete() {
   g.state = 'idle';
   bg.awaitingNextLevel = true;
-  saveBestScore(g.level, bg.score);
+  saveBest(bg.score);
   sfx.clear();
 
-  const best = bg.bestScores[g.level];
   showOverlay(
     'BLOOM! 🌸',
     `All paths lit!<br>Score: ${bg.score}<br>Level ${g.level} complete!`,
@@ -127,7 +125,7 @@ export function bloomLevelComplete() {
 
 export function bloomGameOver() {
   g.state = 'dead';
-  saveBestScore(g.level, bg.score);
+  saveBest(bg.score);
 
   showOverlay(
     'GAME OVER',

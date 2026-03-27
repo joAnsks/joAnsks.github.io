@@ -58,7 +58,7 @@ joAnsks.github.io/
         │               #   setBloomHUDUpdater() (avoids circular dep with hud.js)
         └── game.js     # Bloom lifecycle: startBloomGame(), bloomLevelComplete(),
                         #   bloomGameOver(), bloomPause(), bloomResume(),
-                        #   bloomHandlers{}, localStorage key 'bloom_best'
+                        #   bloomHandlers{}, localStorage key 'bloom_best' (single all-time best)
 ```
 
 ---
@@ -158,7 +158,7 @@ Completely isolated from `g{}` and `mg{}`. Key fields:
 | `bg.pathActivated` / `bg.pathTotal` | Progress toward level completion |
 | `bg.cat` | Object with `phase`, position, `action`, `timer`, `cooldown`, paw animation fields |
 | `bg.mainTrail` | Array of `{x, y}` pixel positions (max 18) — feeds rainbow trail renderer in `drawBloom()`; cleared on level start; not pushed while main ball is stunned |
-| `bg.score` / `bg.bestScores` | Score (accumulates per level); `bestScores` is `{[level]: score}` → `localStorage` key `bloom_best` |
+| `bg.score` / `bg.best` | Score (accumulates per level); `best` is the all-time highest score ever reached — single number persisted to `localStorage` key `bloom_best` (same pattern as `g.best` in Bounce) |
 | `bg.startTime` / `bg.elapsed` / `bg._pausedAt` | Timer fields (same pattern as `mg`) |
 | `bg.frame` | Raw frame counter for animations |
 | `bg.awaitingNextLevel` | True after level complete, cleared when next begins |
@@ -244,7 +244,7 @@ Traps never placed on the solution path.
   - **Play** (40%): bats a random ball with a random velocity boost (1.5–3.0); harmless (can accidentally help)
   - **Eat** (25%): removes a random mini-ball; if no minis → costs 1 life
 - **Levels:** cushions + path nodes grow each level; cat cooldown decreases; score carries across levels
-- **Best scores:** saved per level in `localStorage` key `bloom_best`
+- **Best score:** single all-time highest score saved to `localStorage` key `bloom_best` (same as Bounce's `pb_best`; updates live during play)
 
 ### Level Progression
 - Level N: `2 + N` cushions, `3 + N` path nodes

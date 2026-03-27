@@ -23,7 +23,7 @@ export const bg = {
   mouseY: null,            // canvas-relative cursor Y
 
   score:       0,
-  bestScores:  {},         // { [level]: bestScore } — persisted to 'bloom_best'
+  best:        0,          // all-time highest score — persisted to 'bloom_best'
 
   startTime:   0,
   elapsed:     0,
