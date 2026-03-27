@@ -225,6 +225,8 @@ function updateBalls() {
 // ── Path node activation ──────────────────────────────────────────────────────
 function checkNodeActivation() {
   for (const b of bg.balls) {
+    // Only fully-grown mini-balls can activate path nodes
+    if (b.isMain || b.r < 14) continue;
     for (const n of bg.pathNodes) {
       if (n.activated) continue;
       if (Math.hypot(b.x - n.x, b.y - n.y) < 18) {
