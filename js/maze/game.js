@@ -60,7 +60,15 @@ function solveMazePath(cols, rows) {
 // ── Scatter traps & power-ups ─────────────────────────────────
 function placeEntities(cols, rows) {
   mg.entities = [];
-  const TYPES      = ['teleport', 'teleport', 'freeze', 'speed', 'shield', 'life'];
+  // Weighted pool: teleport is the dominant trap; shield/life are rare.
+  // On last life, life entries are boosted so at least one is likely to appear.
+  const TYPES = [
+    'teleport', 'teleport', 'teleport',
+    'freeze', 'freeze',
+    'speed', 'speed',
+    'shield',
+    ...(g.lives === 1 ? ['life', 'life', 'life'] : ['life']),
+  ];
   const TRAP_TYPES = new Set(['teleport']);
   const density    = 0.10;  // ~10% of cells get an entity
   const total      = Math.floor(cols * rows * density);

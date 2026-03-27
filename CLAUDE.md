@@ -178,7 +178,7 @@ Completely isolated from `g{}`. Key fields:
 - Cell walls: `{N, S, E, W}` — `true` = blocked
 
 ### Entities (~10% of cells)
-Entity pool: `['teleport', 'teleport', 'freeze', 'speed', 'shield', 'life']` — equal weight, traps never placed on the solution path.
+Entity pool (weighted): `teleport×3, freeze×2, speed×2, shield×1, life×1` — life becomes `life×3` when `g.lives === 1`. Traps never placed on the solution path.
 
 | Icon | Type | Kind | Effect |
 |---|---|---|---|
