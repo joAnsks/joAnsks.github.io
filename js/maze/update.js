@@ -41,8 +41,9 @@ export function updateMaze() {
   mg.elapsed = performance.now() - mg.startTime;
 
   // Effect timers
-  if (mg.frozen  && --mg.freezeTimer <= 0) { mg.frozen  = false; mg.moveSpeed = BASE_SPEED; }
-  if (mg.boosted && --mg.boostTimer  <= 0) { mg.boosted = false; mg.moveSpeed = BASE_SPEED; }
+  if (mg.frozen        && --mg.freezeTimer       <= 0) { mg.frozen        = false; mg.moveSpeed = BASE_SPEED; }
+  if (mg.boosted       && --mg.boostTimer        <= 0) { mg.boosted       = false; mg.moveSpeed = BASE_SPEED; }
+  if (mg.chaserFrozen  && --mg.chaserFreezeTimer <= 0) { mg.chaserFrozen  = false; }
 
   // Animate ball between cells
   if (mg.moving) {
@@ -131,6 +132,7 @@ function chaserBFS() {
 // ── Tick chaser movement and check collision ──────────────────
 function updateChaser() {
   if (mg.chaserDelay > 0) { mg.chaserDelay--; return; }
+  if (mg.chaserFrozen) return;
 
   if (mg.chaserMoving) {
     mg.chaserMoveT = Math.min(1, mg.chaserMoveT + mg.chaserSpeed);
@@ -147,13 +149,20 @@ function updateChaser() {
 
       // Collision check on arrival
       if (mg.chaserCol === mg.ballCol && mg.chaserRow === mg.ballRow) {
-        stopChaserMusic();
-        sfx.life();
-        burst(mg.chaserPx, mg.chaserPy, '#ff6b6b', 20);
-        g.lives--;
-        updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
-        if (g.lives <= 0) { mazeUpdateHandlers.gameOver(); return; }
-        showJumpscare();
+        if (mg.shielded) {
+          // Shield absorbs the catch
+          mg.shielded = false;
+          sfx.pu();
+          burst(mg.chaserPx, mg.chaserPy, '#cdb4db', 18);
+        } else {
+          stopChaserMusic();
+          sfx.life();
+          burst(mg.chaserPx, mg.chaserPy, '#ff6b6b', 20);
+          g.lives--;
+          updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
+          if (g.lives <= 0) { mazeUpdateHandlers.gameOver(); return; }
+          showJumpscare();
+        }
         // Reset chaser to start position with a grace period
         mg.chaserCol    = 0;
         mg.chaserRow    = 0;
@@ -213,8 +222,8 @@ function onLanded() {
   for (const ent of mg.entities) {
     if (!ent.hit && ent.col === mg.ballCol && ent.row === mg.ballRow) {
       ent.hit = true;
-      if (ent.type === 'teleport' || ent.type === 'freeze') handleTrap(ent.type);
-      else                                               handlePowerup(ent.type);
+      if (ent.type === 'teleport') handleTrap(ent.type);
+      else                        handlePowerup(ent.type);
       break;
     }
   }
@@ -246,13 +255,6 @@ function handleTrap(type) {
     mg.moving  = false; mg.moveT = 0;
 
     burst(mg.ballPx, mg.ballPy, '#ffb3c1', 18);
-
-  } else if (type === 'freeze') {
-    sfx.wall();
-    burst(mg.ballPx, mg.ballPy, '#bde0fe', 10);
-    mg.frozen      = true;
-    mg.freezeTimer = 180;               // 3 s at 60 fps
-    mg.moveSpeed   = BASE_SPEED * 0.5;
   }
 }
 
@@ -267,5 +269,12 @@ function handlePowerup(type) {
     mg.moveSpeed  = BASE_SPEED * 2;
   } else if (type === 'shield') {
     mg.shielded = true;
+  } else if (type === 'freeze') {
+    mg.chaserFrozen      = true;
+    mg.chaserFreezeTimer = 180;         // 3 s at 60 fps
+  } else if (type === 'life') {
+    if (g.lives < 5) g.lives++;
+    burst(mg.ballPx, mg.ballPy, '#ffb3c1', 16);
+    updateMazeHUD(mg.elapsed, mg.bestTimes[g.level] || null);
   }
 }

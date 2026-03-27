@@ -59,4 +59,6 @@ export const mg = {
   chaserMoveT:    0,
   chaserSpeed:    0.07,   // slower than player's 0.14
   chaserDelay:    600,    // frames before chaser activates (10 s head start)
+  chaserFrozen:       false,
+  chaserFreezeTimer:  0,
 };

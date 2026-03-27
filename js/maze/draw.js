@@ -75,8 +75,8 @@ export function drawMaze() {
     const ey = ent.row * CELL + CELL / 2;
     const ep = 0.7 + 0.3 * Math.sin(Date.now() / 300 + ent.col + ent.row);
 
-    const ICONS  = { teleport: '⟳', freeze: '❄', speed: '★', shield: '♥' };
-    const COLORS = { teleport: '#ffb3c1', freeze: '#bde0fe', speed: '#fdffb6', shield: '#cdb4db' };
+    const ICONS  = { teleport: '⟳', freeze: '❄', speed: '★', shield: '♥', life: '+' };
+    const COLORS = { teleport: '#ffb3c1', freeze: '#bde0fe', speed: '#fdffb6', shield: '#cdb4db', life: '#ffb3c1' };
 
     ctx.save();
     ctx.shadowColor = COLORS[ent.type];
@@ -121,13 +121,14 @@ export function drawMaze() {
     const alpha = mg.chaserDelay > 60 ? 0 : mg.chaserDelay > 0 ? (1 - mg.chaserDelay / 60) * 0.6 : 1;
 
     if (alpha > 0) {
+      const chaserColor = mg.chaserFrozen ? '#bde0fe' : '#ff6b6b';
       ctx.save();
       ctx.globalAlpha = alpha;
       // Glow
-      ctx.shadowColor = '#ff6b6b';
+      ctx.shadowColor = chaserColor;
       ctx.shadowBlur  = 18 * pulse;
       // Body
-      ctx.fillStyle = '#ff6b6b';
+      ctx.fillStyle = chaserColor;
       ctx.beginPath(); ctx.arc(mg.chaserPx, mg.chaserPy, 9, 0, Math.PI * 2); ctx.fill();
       // Angry eyes
       ctx.shadowBlur = 0;
@@ -178,11 +179,17 @@ export function drawMaze() {
   ctx.restore();
 
   // ── On-canvas effect labels (freeze/boost timers) ─────────────
-  if (mg.frozen || mg.boosted) {
-    ctx.fillStyle    = mg.frozen ? '#bde0fe' : '#fdffb6';
+  if (mg.boosted || mg.chaserFrozen) {
     ctx.font         = '7px "Press Start 2P", monospace';
     ctx.textAlign    = 'right';
     ctx.textBaseline = 'top';
-    ctx.fillText(mg.frozen ? 'FROZEN' : 'SPEED!', W() - 8, 8);
+    if (mg.boosted) {
+      ctx.fillStyle = '#fdffb6';
+      ctx.fillText('SPEED!', W() - 8, 8);
+    }
+    if (mg.chaserFrozen) {
+      ctx.fillStyle = '#bde0fe';
+      ctx.fillText('CHASER FROZEN!', W() - 8, mg.boosted ? 20 : 8);
+    }
   }
 }

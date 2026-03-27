@@ -60,8 +60,8 @@ function solveMazePath(cols, rows) {
 // ── Scatter traps & power-ups ─────────────────────────────────
 function placeEntities(cols, rows) {
   mg.entities = [];
-  const TYPES      = ['teleport', 'teleport', 'freeze', 'freeze', 'speed', 'shield'];
-  const TRAP_TYPES = new Set(['teleport', 'freeze']);
+  const TYPES      = ['teleport', 'teleport', 'freeze', 'speed', 'shield', 'life'];
+  const TRAP_TYPES = new Set(['teleport']);
   const density    = 0.10;  // ~10% of cells get an entity
   const total      = Math.floor(cols * rows * density);
 
@@ -101,6 +101,7 @@ function initMazeLevel() {
   mg.shielded    = false;
   mg.frozen      = false; mg.freezeTimer = 0;
   mg.boosted     = false; mg.boostTimer  = 0;
+  mg.chaserFrozen = false; mg.chaserFreezeTimer = 0;
   mg.moveSpeed   = 0.14;
 
   placeEntities(cols, rows);
@@ -133,8 +134,9 @@ export function startMazeGame() {
   showOverlay(
     'BALL MAZE',
     'Reach the ★ exit to complete each level.<br><br>' +
-    '⟳ teleport warps you &nbsp;|&nbsp; ❄ slows you<br>' +
-    '★ speed boost &nbsp;|&nbsp; ♥ shield<br><br>' +
+    '⟳ teleport warps you (trap)<br>' +
+    '❄ freezes the chaser &nbsp;|&nbsp; ★ speed boost<br>' +
+    '♥ shield (blocks chaser &amp; traps) &nbsp;|&nbsp; + extra life<br><br>' +
     'A red chaser starts with you — it chases after 10 s!<br><br>' +
     'WASD or ARROW KEYS to move.<br>SPACE to pause.',
     'START ▶'

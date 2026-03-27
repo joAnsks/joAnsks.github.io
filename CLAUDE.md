@@ -115,6 +115,8 @@ Completely isolated from `g{}`. Key fields:
 | `mg.camX` / `mg.camY` | Camera pixel offset |
 | `mg.shielded`, `mg.frozen`, `mg.boosted` | Active effects |
 | `mg.freezeTimer` / `mg.boostTimer` | Effect countdown (frames) |
+| `mg.chaserFrozen` | True while chaser is frozen by ❄ power-up |
+| `mg.chaserFreezeTimer` | Countdown frames for chaser freeze (180 = 3 s) |
 | `mg.entities` | Array of `{col, row, type, hit}` |
 | `mg.startTime` / `mg.elapsed` / `mg._pausedAt` | Timer fields |
 | `mg.bestTimes` | `{[level]: ms}` — loaded/saved via `localStorage` key `maze_best` |
@@ -166,7 +168,7 @@ Completely isolated from `g{}`. Key fields:
 - **Goal:** navigate ball from (0,0) top-left to ★ exit at bottom-right
 - **Control:** WASD or arrow keys; Space = pause; swipe on canvas (mobile)
 - **Lives:** 3; losing all → Game Over
-- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life and resets chaser to (0,0) with a 2 s grace period; heartbeat thumps when chaser is within 4 cells (Manhattan distance); a random meme jumpscare flashes for 1.2 s if the player survives the catch
+- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life (unless shielded) and resets chaser to (0,0) with a 2 s grace period; heartbeat thumps when chaser is within 4 cells (Manhattan distance); a random meme jumpscare flashes for 1.2 s if the player survives the catch unshielded
 - **Timer:** `performance.now()` sub-ms accuracy; pause shifts `mg.startTime`
 - **Levels:** maze grows 7×7 → 9×9 → … → 25×25 then cycles (10 sizes)
 - **Best times:** saved per level in `localStorage` key `maze_best`
@@ -176,12 +178,15 @@ Completely isolated from `g{}`. Key fields:
 - Cell walls: `{N, S, E, W}` — `true` = blocked
 
 ### Entities (~10% of cells)
-| Icon | Type | Effect |
-|---|---|---|
-| ⟳ | `teleport` | Warps ball to random cell (shield blocks) |
-| ❄ | `freeze` | Half speed for 3 s (shield blocks) |
-| ★ | `speed` | 2× speed for 5 s |
-| ♥ | `shield` | Absorbs next trap hit |
+Entity pool: `['teleport', 'teleport', 'freeze', 'speed', 'shield', 'life']` — equal weight, traps never placed on the solution path.
+
+| Icon | Type | Kind | Effect |
+|---|---|---|---|
+| ⟳ | `teleport` | Trap | Warps ball to random cell; shield blocks |
+| ❄ | `freeze` | Power-up | Freezes the chaser for 3 s; chaser turns blue |
+| ★ | `speed` | Power-up | 2× player speed for 5 s |
+| ♥ | `shield` | Power-up | Absorbs next trap hit **or** chaser catch (no life lost, no jumpscare) |
+| + | `life` | Power-up | +1 life (max 5) |
 
 ---
 
