@@ -283,8 +283,8 @@ export function drawBloom() {
     }
 
     // Growth progress arc for growing mini-balls
-    if (!b.isMain && b.r < 14) {
-      const pct = (b.r - 5) / 9; // 0 → 1
+    if (!b.isMain && b.r < 10) {
+      const pct = (b.r - 3) / 7; // 0 → 1
       ctx.strokeStyle = b.color;
       ctx.lineWidth   = 1.5;
       ctx.globalAlpha = 0.4;

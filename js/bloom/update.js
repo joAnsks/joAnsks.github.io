@@ -164,9 +164,9 @@ function updateBalls() {
     else          clampSpeedMini(b);
 
     // Mini-ball growth
-    if (!b.isMain && b.r < 14) {
+    if (!b.isMain && b.r < 10) {
       b.r += 0.02;
-      if (b.r > 14) b.r = 14;
+      if (b.r > 10) b.r = 10;
     }
 
     b.age++;
@@ -197,14 +197,14 @@ function updateBalls() {
         else          clampSpeedMini(b);
 
         // Spawn mini-ball if cap not reached (main ball or full-size mini)
-        if (bg.balls.length < 12 && (b.isMain || b.r >= 14)) {
+        if (bg.balls.length < 12 && (b.isMain || b.r >= 10)) {
           const spread = rand(-0.8, 0.8);
           bg.balls.push({
             x:        c.x,
             y:        c.y,
             vx:       b.vx * 0.6 + spread,
             vy:       b.vy * 0.6 + spread,
-            r:        5,
+            r:        3,
             isMain:   false,
             age:      0,
             color:    PASTEL[Math.floor(Math.random() * PASTEL.length)],
@@ -226,7 +226,7 @@ function updateBalls() {
 function checkNodeActivation() {
   for (const b of bg.balls) {
     // Only fully-grown mini-balls can activate path nodes
-    if (b.isMain || b.r < 14) continue;
+    if (b.isMain || b.r < 10) continue;
     for (const n of bg.pathNodes) {
       if (n.activated) continue;
       if (Math.hypot(b.x - n.x, b.y - n.y) < 18) {
