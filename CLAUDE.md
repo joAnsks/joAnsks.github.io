@@ -144,6 +144,7 @@ Completely isolated from `g{}`. Key fields:
 | `mg.chaserMoving`, `mg.chaserMoveFrom`, `mg.chaserMoveTo`, `mg.chaserMoveT` | Chaser animation state |
 | `mg.chaserSpeed` | Step fraction per frame; ramps from 0.07 → 0.11 with level |
 | `mg.chaserDelay` | Countdown frames before chaser activates (600 = 10 s) |
+| `mg.trail` | Array of `{x, y}` pixel positions (max 18) — feeds rainbow trail renderer in `drawMaze()` |
 
 ## Bloom State — `bg` object (`js/bloom/state.js`)
 
@@ -156,6 +157,7 @@ Completely isolated from `g{}` and `mg{}`. Key fields:
 | `bg.pathNodes` | Array of `{x, y, r, activated, side:'N'|'S'|'E'|'W', glowT}` — hidden wall triggers |
 | `bg.pathActivated` / `bg.pathTotal` | Progress toward level completion |
 | `bg.cat` | Object with `phase`, position, `action`, `timer`, `cooldown`, paw animation fields |
+| `bg.mainTrail` | Array of `{x, y}` pixel positions (max 18) — feeds rainbow trail renderer in `drawBloom()`; cleared on level start; not pushed while main ball is stunned |
 | `bg.score` / `bg.bestScores` | Score (accumulates per level); `bestScores` is `{[level]: score}` → `localStorage` key `bloom_best` |
 | `bg.startTime` / `bg.elapsed` / `bg._pausedAt` | Timer fields (same pattern as `mg`) |
 | `bg.frame` | Raw frame counter for animations |

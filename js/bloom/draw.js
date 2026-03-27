@@ -188,7 +188,22 @@ export function drawBloom() {
   }
   ctx.restore();
 
-  // 5. Balls
+  // 5. Rainbow trail for main ball
+  if (bg.mainTrail.length > 1) {
+    const hueBase = Date.now() / 30;
+    ctx.save();
+    for (let i = 0; i < bg.mainTrail.length; i++) {
+      const frac = i / bg.mainTrail.length;
+      ctx.globalAlpha = frac * 0.55;
+      ctx.fillStyle   = `hsl(${(hueBase + i * (360 / bg.mainTrail.length)) % 360}, 100%, 65%)`;
+      ctx.beginPath();
+      ctx.arc(bg.mainTrail[i].x, bg.mainTrail[i].y, 10 * frac * 0.7, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // 6. Balls
   for (const b of bg.balls) {
     ctx.save();
 
@@ -281,12 +296,12 @@ export function drawBloom() {
     ctx.restore();
   }
 
-  // 6. Cat (when not idle)
+  // 7. Cat (when not idle)
   if (bg.cat.phase !== 'idle') {
     drawCat(bg.cat);
   }
 
-  // 7. PATH label (on-canvas supplement to HUD)
+  // 8. PATH label (on-canvas supplement to HUD)
   ctx.save();
   ctx.font          = '7px "Press Start 2P", monospace';
   ctx.textAlign     = 'right';

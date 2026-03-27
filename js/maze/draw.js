@@ -162,6 +162,20 @@ export function drawMaze() {
     ctx.fillRect(0, 0, mg.cols * CELL, mg.rows * CELL);
   }
 
+  // ── Rainbow trail ─────────────────────────────────────────────
+  if (mg.trail.length > 1) {
+    const hueBase = Date.now() / 30;
+    for (let i = 0; i < mg.trail.length; i++) {
+      const frac = i / mg.trail.length;
+      ctx.globalAlpha = frac * 0.55;
+      ctx.fillStyle   = `hsl(${(hueBase + i * (360 / mg.trail.length)) % 360}, 100%, 65%)`;
+      ctx.beginPath();
+      ctx.arc(mg.trail[i].x, mg.trail[i].y, 8 * frac * 0.7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   // ── Ball glow ─────────────────────────────────────────────────
   const ballColor = mg.boosted ? '#fdffb6' : mg.frozen ? '#ffd6a5' : '#fff9fb';
   const grd = ctx.createRadialGradient(mg.ballPx, mg.ballPy, 0, mg.ballPx, mg.ballPy, 20);

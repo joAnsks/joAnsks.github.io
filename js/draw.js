@@ -82,12 +82,14 @@ export function draw() {
   ctx.globalAlpha = 1;
 
   // Ball trails + balls
+  const _bounceHueBase = Date.now() / 30;
   g.balls.forEach(ball => {
     ball.trail.forEach((t, i) => {
-      ctx.globalAlpha = (i / ball.trail.length) * 0.38;
-      ctx.fillStyle   = BALL_CLR;
+      const frac = i / ball.trail.length;
+      ctx.globalAlpha = frac * 0.55;
+      ctx.fillStyle   = `hsl(${(_bounceHueBase + i * (360 / ball.trail.length)) % 360}, 100%, 65%)`;
       ctx.beginPath();
-      ctx.arc(t.x, t.y, BALL_R * (i / ball.trail.length) * 0.65, 0, Math.PI * 2);
+      ctx.arc(t.x, t.y, BALL_R * frac * 0.65, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.globalAlpha = 1;

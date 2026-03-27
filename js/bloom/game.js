@@ -80,6 +80,7 @@ function initBloomLevel() {
   bg._pausedAt        = null;
   bg.frame            = 0;
   bg.awaitingNextLevel = false;
+  bg.mainTrail        = [];
 
   g.particles.length = 0; // clear leftover particles from previous level
 }

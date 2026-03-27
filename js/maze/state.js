@@ -61,4 +61,7 @@ export const mg = {
   chaserDelay:    600,    // frames before chaser activates (10 s head start)
   chaserFrozen:       false,
   chaserFreezeTimer:  0,
+
+  // Rainbow trail for the player ball
+  trail: [],
 };

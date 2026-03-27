@@ -31,4 +31,7 @@ export const bg = {
 
   frame:             0,
   awaitingNextLevel: false,
+
+  // Rainbow trail for the main ball
+  mainTrail: [],
 };

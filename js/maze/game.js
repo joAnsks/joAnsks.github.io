@@ -115,6 +115,7 @@ function initMazeLevel() {
   mg.boosted     = false; mg.boostTimer  = 0;
   mg.chaserFrozen = false; mg.chaserFreezeTimer = 0;
   mg.moveSpeed   = 0.14;
+  mg.trail       = [];
 
   placeEntities(cols, rows);
 

@@ -45,6 +45,10 @@ export function updateMaze() {
   if (mg.boosted       && --mg.boostTimer        <= 0) { mg.boosted       = false; mg.moveSpeed = BASE_SPEED; }
   if (mg.chaserFrozen  && --mg.chaserFreezeTimer <= 0) { mg.chaserFrozen  = false; }
 
+  // Rainbow trail — capture position every frame
+  mg.trail.push({ x: mg.ballPx, y: mg.ballPy });
+  if (mg.trail.length > 18) mg.trail.shift();
+
   // Animate ball between cells
   if (mg.moving) {
     mg.moveT = Math.min(1, mg.moveT + mg.moveSpeed);

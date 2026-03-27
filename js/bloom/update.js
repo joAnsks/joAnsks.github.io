@@ -391,6 +391,13 @@ export function updateBloom() {
 
   updateCushions();
   updateBalls();
+
+  // Rainbow trail — track main ball position each frame
+  const _mb = bg.balls.find(b => b.isMain);
+  if (_mb && !_mb.stunned) {
+    bg.mainTrail.push({ x: _mb.x, y: _mb.y });
+    if (bg.mainTrail.length > 18) bg.mainTrail.shift();
+  }
   checkNodeActivation();
   updateCat();
   tickParticles();
