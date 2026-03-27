@@ -304,7 +304,7 @@ Traps never placed on the solution path.
   - `refreshAquarium()` — reads both localStorage keys, rebuilds the full tank DOM (decorations + fish + bubbles)
 - **Hook points for levels:** `recordLevelComplete()` called in `nextLevel()` (Bounce), `mazeLevelComplete()` (Maze), `bloomLevelComplete()` (Bloom); `refreshAquarium()` called once on boot from `main.js`
 - **Hook points for best scores:** `recordNewBest('bounce')` / `recordNewBest('bloom')` called inside the live best-update branches of `updateHUD()` / `updateBloomHUD()` in `hud.js`; `recordNewBest('maze')` called inside `saveBestTime()` in `maze/game.js`
-- **Fish:** up to 12 displayed at once; cycle through 10 emoji types (🐠🐡🐟🦈🐬🦑🦐🦞🦀🐙); swim left↔right via CSS `@keyframes swim-rtl` / `swim-ltr`; positions & speeds are deterministic (index-based) so re-renders don't cause jumps
+- **Fish:** up to 12 displayed at once; cycle through 10 emoji types (🐠🐡🐟🦈🐬🦑🦐🦞🦀🐙); swim left↔right via CSS `@keyframes swim-rtl` / `swim-ltr`; positions & speeds are deterministic (index-based) so re-renders don't cause jumps; white/light glow via `filter: drop-shadow` so they pop against the pastel cyan water
 - **Seafloor decorations** (`.aq-decor`, CSS class per type) — sit on the sandy tank floor; rendered before fish so they always appear even on an empty tank; hide the "earn fish" hint text when at least one decoration is present:
   | Decoration | Unlock condition | CSS class | Notes |
   |---|---|---|---|

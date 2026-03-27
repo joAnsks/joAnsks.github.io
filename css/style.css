@@ -331,7 +331,7 @@ canvas { display: block; }
   animation: swim-rtl linear infinite;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.75)) drop-shadow(0 2px 4px rgba(255,255,255,0.40));
 }
 .aq-fish.ltr {
   animation-name: swim-ltr;
