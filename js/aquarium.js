@@ -1,10 +1,34 @@
 // ── Achievement Aquarium ──────────────────────────────────────
 // Tracks total levels completed across all three games.
 // Every 10 levels = 1 fish earned. Fish swim in the menu tank.
+//
+// Seafloor decorations unlock when a new best score is set:
+//   bounce new best → 🦪 Clam   (LS key 'aquarium_decor'.clam)
+//   maze   new best → 🪸 Coral  (.coral)
+//   bloom  new best → seaweed   (.seaweed)
+//   all three       → ⭐ Starfish (.starfish)
 
-const LS_KEY = 'aquarium_levels';
+const LS_KEY    = 'aquarium_levels';
+const DECOR_KEY = 'aquarium_decor';
 
 const FISH = ['🐠', '🐡', '🐟', '🦈', '🐬', '🦑', '🦐', '🦞', '🦀', '🐙'];
+
+// Call this when the player sets a new best score in any game.
+// game: 'bounce' | 'maze' | 'bloom'
+export function recordNewBest(game) {
+  let decor;
+  try { decor = JSON.parse(localStorage.getItem(DECOR_KEY) || '{}'); }
+  catch { decor = {}; }
+
+  const map = { bounce: 'clam', maze: 'coral', bloom: 'seaweed' };
+  const key = map[game];
+  if (!key || decor[key]) return; // already unlocked — nothing to do
+
+  decor[key] = true;
+  if (decor.clam && decor.coral && decor.seaweed) decor.starfish = true;
+  try { localStorage.setItem(DECOR_KEY, JSON.stringify(decor)); } catch (_) {}
+  refreshAquarium();
+}
 
 // Call this every time any game completes a level.
 export function recordLevelComplete() {
@@ -33,11 +57,41 @@ export function refreshAquarium() {
     }
   }
 
-  // Clear existing fish
-  tankEl.querySelectorAll('.aq-fish, .aq-bubble').forEach(el => el.remove());
+  // Clear existing dynamic elements
+  tankEl.querySelectorAll('.aq-fish, .aq-bubble, .aq-decor').forEach(el => el.remove());
 
+  // Seafloor decorations (rendered regardless of fish count)
+  let decor;
+  try { decor = JSON.parse(localStorage.getItem(DECOR_KEY) || '{}'); }
+  catch { decor = {}; }
+
+  if (decor.seaweed) {
+    const el = document.createElement('div');
+    el.className = 'aq-decor aq-seaweed';
+    tankEl.appendChild(el);
+  }
+  if (decor.clam) {
+    const el = document.createElement('span');
+    el.className = 'aq-decor aq-clam';
+    el.textContent = '🦪';
+    tankEl.appendChild(el);
+  }
+  if (decor.coral) {
+    const el = document.createElement('span');
+    el.className = 'aq-decor aq-coral';
+    el.textContent = '🪸';
+    tankEl.appendChild(el);
+  }
+  if (decor.starfish) {
+    const el = document.createElement('span');
+    el.className = 'aq-decor aq-starfish';
+    el.textContent = '⭐';
+    tankEl.appendChild(el);
+  }
+
+  const hasDecor = decor.clam || decor.coral || decor.seaweed;
   if (fishCount === 0) {
-    if (emptyEl) emptyEl.style.display = '';
+    if (emptyEl) emptyEl.style.display = hasDecor ? 'none' : '';
     return;
   }
   if (emptyEl) emptyEl.style.display = 'none';

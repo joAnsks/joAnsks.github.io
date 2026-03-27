@@ -357,3 +357,74 @@ canvas { display: block; }
   from { transform: translateY(0);      opacity: 0.7; }
   to   { transform: translateY(-130px); opacity: 0; }
 }
+/* ── Seafloor decorations (unlocked by new best scores) ──── */
+.aq-decor {
+  position: absolute;
+  bottom: 4px;
+  pointer-events: none;
+  user-select: none;
+}
+/* 🦪 Clam — unlocked by Pastel Bounce new best */
+.aq-clam {
+  left: 8%;
+  font-size: 1.25em;
+  line-height: 1;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6));
+  animation: aq-clam-bob 4s ease-in-out infinite;
+}
+/* Seaweed — unlocked by Ball Bloom new best (CSS-drawn, no emoji) */
+.aq-seaweed {
+  left: 24%;
+  bottom: 14px;
+  width: 7px;
+  height: 38px;
+  background: linear-gradient(180deg, #2fc870, #1b7040);
+  border-radius: 4px 4px 2px 2px;
+  transform-origin: bottom center;
+  animation: aq-sway 3s ease-in-out infinite;
+}
+.aq-seaweed::before {
+  content: '';
+  position: absolute;
+  top: 7px; left: -7px;
+  width: 9px; height: 13px;
+  background: #45e882;
+  border-radius: 50% 50% 50% 10% / 60% 60% 40% 20%;
+  transform-origin: right center;
+}
+.aq-seaweed::after {
+  content: '';
+  position: absolute;
+  top: 20px; right: -7px;
+  width: 9px; height: 13px;
+  background: #45e882;
+  border-radius: 50% 10% 50% 50% / 60% 20% 60% 40%;
+  transform-origin: left center;
+}
+/* 🪸 Coral — unlocked by Ball Maze new best */
+.aq-coral {
+  left: 47%;
+  font-size: 1.4em;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(255,100,60,0.5));
+}
+/* ⭐ Starfish — bonus when all three are unlocked */
+.aq-starfish {
+  left: 70%;
+  font-size: 1.0em;
+  line-height: 1;
+  filter: drop-shadow(0 1px 5px rgba(255,210,60,0.55));
+  animation: aq-starfish-rock 5s ease-in-out infinite;
+}
+@keyframes aq-sway {
+  0%, 100% { transform: rotate(-12deg); }
+  50%       { transform: rotate(12deg);  }
+}
+@keyframes aq-clam-bob {
+  0%, 100% { transform: translateY(0);    }
+  50%       { transform: translateY(-2px); }
+}
+@keyframes aq-starfish-rock {
+  0%, 100% { transform: rotate(-8deg);  }
+  50%       { transform: rotate(8deg);  }
+}

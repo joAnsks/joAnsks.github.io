@@ -37,8 +37,8 @@ joAnsks.github.io/
     ├── input.js        # Keyboard/mouse/touch listeners (side-effect module)
     ├── draw.js         # Bounce renderer: draw(), shadeColor()
     ├── update.js       # Bounce logic: update(), handlers{} injection point
-    ├── aquarium.js     # Achievement tank: recordLevelComplete(), refreshAquarium()
-    │                   #   localStorage key 'aquarium_levels'; 1 fish per 10 levels
+    ├── aquarium.js     # Achievement tank: recordLevelComplete(), recordNewBest(), refreshAquarium()
+    │                   #   localStorage keys 'aquarium_levels' (fish) + 'aquarium_decor' (seafloor)
     ├── transitions.js  # Bounce lifecycle: startGame(), nextLevel(), pause(),
     │                   #   resume(), gameOver()
     ├── main.js         # Entry point: game-select wiring, resize, game loop,
@@ -75,7 +75,7 @@ ball.js           ← state
 paddle.js         ← state
 bricks.js         ← state
 share.js          ← no game deps
-hud.js            ← state, share, bloom/state
+hud.js            ← state, share, bloom/state, aquarium
 powerups.js       ← state, audio, ball, paddle
 input.js          ← state                          (side-effect: registers listeners)
 draw.js           ← state
@@ -298,13 +298,24 @@ Traps never placed on the solution path.
 
 ### Achievement Tank (`#aquarium` in `#game-select`)
 - Sits below the game cards in the menu; hidden whenever a game is active (parent `#game-select` is hidden)
-- **`js/aquarium.js`** — no game deps; only touches DOM + `localStorage`
+- **`js/aquarium.js`** — imported by `hud.js`, `transitions.js`, `maze/game.js`, `bloom/game.js`
   - `recordLevelComplete()` — increments `aquarium_levels` in localStorage, then calls `refreshAquarium()`
-  - `refreshAquarium()` — reads localStorage, computes fish count (`floor(levels / 10)`), rebuilds the tank DOM
-- **Hook points:** `recordLevelComplete()` is called in `nextLevel()` (Bounce), `mazeLevelComplete()` (Maze), `bloomLevelComplete()` (Bloom); `refreshAquarium()` called once on boot from `main.js`
+  - `recordNewBest(game)` — called with `'bounce'` / `'maze'` / `'bloom'` when a new best score/time is set; unlocks the matching seafloor decoration on first call; auto-unlocks ⭐ Starfish once all three are earned; idempotent after unlock
+  - `refreshAquarium()` — reads both localStorage keys, rebuilds the full tank DOM (decorations + fish + bubbles)
+- **Hook points for levels:** `recordLevelComplete()` called in `nextLevel()` (Bounce), `mazeLevelComplete()` (Maze), `bloomLevelComplete()` (Bloom); `refreshAquarium()` called once on boot from `main.js`
+- **Hook points for best scores:** `recordNewBest('bounce')` / `recordNewBest('bloom')` called inside the live best-update branches of `updateHUD()` / `updateBloomHUD()` in `hud.js`; `recordNewBest('maze')` called inside `saveBestTime()` in `maze/game.js`
 - **Fish:** up to 12 displayed at once; cycle through 10 emoji types (🐠🐡🐟🦈🐬🦑🦐🦞🦀🐙); swim left↔right via CSS `@keyframes swim-rtl` / `swim-ltr`; positions & speeds are deterministic (index-based) so re-renders don't cause jumps
+- **Seafloor decorations** (`.aq-decor`, CSS class per type) — sit on the sandy tank floor; rendered before fish so they always appear even on an empty tank; hide the "earn fish" hint text when at least one decoration is present:
+  | Decoration | Unlock condition | CSS class | Notes |
+  |---|---|---|---|
+  | 🦪 Clam | Pastel Bounce new best score | `.aq-clam` | Gentle bob animation |
+  | Seaweed | Ball Bloom new best score | `.aq-seaweed` | CSS-drawn (no emoji); two fronds; sways left/right |
+  | 🪸 Coral | Ball Maze new best time (any level) | `.aq-coral` | Warm orange glow shadow |
+  | ⭐ Starfish | All three above unlocked | `.aq-starfish` | Bonus; rocks back and forth |
 - **Progress label** (`#aq-progress`): shows `N / 10 levels for first fish` or `K fish · N / 10 for next`
-- **localStorage key:** `aquarium_levels` — cumulative integer; fish = `Math.floor(levels / 10)`
+- **localStorage keys:**
+  - `aquarium_levels` — cumulative integer; fish = `Math.floor(levels / 10)`
+  - `aquarium_decor` — JSON object `{ clam?, coral?, seaweed?, starfish? }`; each key is `true` once unlocked
 
 ### Share (`js/share.js`)
 - `shareScore(shareText, gameName, stat, statLabel, btnEl)` — generates score card, uploads it, opens FB sharer

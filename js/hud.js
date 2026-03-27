@@ -1,6 +1,7 @@
 import { g }          from './state.js';
 import { bg }         from './bloom/state.js';
 import { shareScore } from './share.js';
+import { recordNewBest } from './aquarium.js';
 
 // ── Bounce HUD ────────────────────────────────────────────────
 export function updateHUD() {
@@ -8,7 +9,7 @@ export function updateHUD() {
   document.getElementById('level-display').textContent = g.level;
   document.getElementById('lives-display').textContent = '♥'.repeat(Math.max(0, g.lives));
   const newBest = Math.max(g.best, g.score);
-  if (newBest > g.best) { g.best = newBest; localStorage.setItem('pb_best', g.best); }
+  if (newBest > g.best) { g.best = newBest; localStorage.setItem('pb_best', g.best); recordNewBest('bounce'); }
   document.getElementById('best-display').textContent  = g.best;
   document.getElementById('powerup-bar').innerHTML     = puBarHTML();
 }
@@ -45,7 +46,7 @@ export function updateBloomHUD() {
   document.getElementById('level-display').textContent = g.level;
   document.getElementById('lives-display').textContent = '♥'.repeat(Math.max(0, g.lives));
   const newBest = Math.max(bg.best, bg.score);
-  if (newBest > bg.best) { bg.best = newBest; try { localStorage.setItem('bloom_best', String(bg.best)); } catch (_) {} }
+  if (newBest > bg.best) { bg.best = newBest; try { localStorage.setItem('bloom_best', String(bg.best)); } catch (_) {} recordNewBest('bloom'); }
   document.getElementById('best-display').textContent  = bg.best;
 }
 

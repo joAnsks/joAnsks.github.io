@@ -4,7 +4,7 @@ import { generateMaze, mazeSize }   from './gen.js';
 import { mazeUpdateHandlers }       from './update.js';
 import { showOverlay, hideOverlay, updateMazeHUD } from '../hud.js';
 import { stopChaserMusic } from '../audio.js';
-import { recordLevelComplete } from '../aquarium.js';
+import { recordLevelComplete, recordNewBest } from '../aquarium.js';
 
 const BEST_KEY = 'maze_best';
 
@@ -18,6 +18,7 @@ function saveBestTime(level, ms) {
   if (!mg.bestTimes[level] || ms < mg.bestTimes[level]) {
     mg.bestTimes[level] = ms;
     try { localStorage.setItem(BEST_KEY, JSON.stringify(mg.bestTimes)); } catch {}
+    recordNewBest('maze');
   }
 }
 
