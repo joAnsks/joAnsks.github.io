@@ -26,14 +26,14 @@ let _swipeX = null, _swipeY = null;
 const SWIPE_THRESHOLD = 24;
 
 wrap.addEventListener('touchstart', e => {
-  if (g.gameMode !== 'maze' || g.state !== 'playing') return;
+  if ((g.gameMode !== 'maze' && g.gameMode !== 'bloom') || g.state !== 'playing') return;
   e.preventDefault();
   _swipeX = e.touches[0].clientX;
   _swipeY = e.touches[0].clientY;
 }, { passive: false });
 
 wrap.addEventListener('touchend', e => {
-  if (g.gameMode !== 'maze' || g.state !== 'playing' || _swipeX === null) return;
+  if ((g.gameMode !== 'maze' && g.gameMode !== 'bloom') || g.state !== 'playing' || _swipeX === null) return;
   e.preventDefault();
   const dx = e.changedTouches[0].clientX - _swipeX;
   const dy = e.changedTouches[0].clientY - _swipeY;
@@ -42,8 +42,10 @@ wrap.addEventListener('touchend', e => {
   const key = Math.abs(dx) > Math.abs(dy)
     ? (dx > 0 ? 'ArrowRight' : 'ArrowLeft')
     : (dy > 0 ? 'ArrowDown'  : 'ArrowUp');
+  // Bloom uses a slightly longer hold so the physics feel responsive
+  const holdMs = g.gameMode === 'bloom' ? 200 : 150;
   g.keys[key] = true;
-  setTimeout(() => { g.keys[key] = false; }, 150);
+  setTimeout(() => { g.keys[key] = false; }, holdMs);
 }, { passive: false });
 
 wrap.addEventListener('touchcancel', () => { _swipeX = _swipeY = null; });

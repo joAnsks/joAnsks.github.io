@@ -19,6 +19,9 @@ export const bg = {
     targetBallIdx: -1,
   },
 
+  mouseX: null,            // canvas-relative cursor X (null when outside canvas)
+  mouseY: null,            // canvas-relative cursor Y
+
   score:       0,
   bestScores:  {},         // { [level]: bestScore } — persisted to 'bloom_best'
 

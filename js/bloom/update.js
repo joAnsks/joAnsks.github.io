@@ -6,19 +6,39 @@ import { burst }               from '../particles.js';
 // Populated by game.js at module load (avoids circular dep)
 export const bloomUpdateHandlers = { gameOver: null, levelComplete: null };
 
-// Imported lazily to avoid circular dep (hud → bloom/state → ok)
+// Injected by game.js to avoid hud.js → bloom/update.js cycle
 let _updateBloomHUD = null;
 export function setBloomHUDUpdater(fn) { _updateBloomHUD = fn; }
 
+// ── Physics constants ─────────────────────────────────────────────────────────
+const PLAYER_ACCEL     = 0.4;   // acceleration per frame when key held
+const PLAYER_FRICTION  = 0.88;  // damping per frame when no input on that axis
+const PLAYER_MAX_SPEED = 4.0;   // px/frame cap for main ball
+const MINI_MIN_SPEED   = 1.5;   // mini-balls never stop
+const MINI_MAX_SPEED   = 5.0;
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function clampSpeed(b) {
+function clampSpeedPlayer(b) {
   const spd = Math.hypot(b.vx, b.vy);
-  if (spd < 1.5) { b.vx = b.vx / spd * 1.5; b.vy = b.vy / spd * 1.5; }
-  if (spd > 5.0) { b.vx = b.vx / spd * 5.0; b.vy = b.vy / spd * 5.0; }
+  if (spd > PLAYER_MAX_SPEED) {
+    b.vx = b.vx / spd * PLAYER_MAX_SPEED;
+    b.vy = b.vy / spd * PLAYER_MAX_SPEED;
+  }
+}
+
+function clampSpeedMini(b) {
+  const spd = Math.hypot(b.vx, b.vy);
+  if (spd < MINI_MIN_SPEED && spd > 0) {
+    b.vx = b.vx / spd * MINI_MIN_SPEED;
+    b.vy = b.vy / spd * MINI_MIN_SPEED;
+  }
+  if (spd > MINI_MAX_SPEED) {
+    b.vx = b.vx / spd * MINI_MAX_SPEED;
+    b.vy = b.vy / spd * MINI_MAX_SPEED;
+  }
 }
 
 function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
-
 function lerp(a, b, t) { return a + (b - a) * t; }
 function easeOut(t)    { return 1 - (1 - t) * (1 - t); }
 function easeIn(t)     { return t * t; }
@@ -32,11 +52,48 @@ function nearestBallIdx(x, y) {
   return best;
 }
 
+function mainBallIdx() {
+  return bg.balls.findIndex(b => b.isMain);
+}
+
 function weightedCatAction() {
   const r = Math.random() * 100;
   if (r < 35) return 'squash';
   if (r < 75) return 'play';
   return 'eat';
+}
+
+// ── Player input → main ball ──────────────────────────────────────────────────
+function applyPlayerInput(b) {
+  const kLeft  = g.keys['ArrowLeft']  || g.keys['a'] || g.keys['A'];
+  const kRight = g.keys['ArrowRight'] || g.keys['d'] || g.keys['D'];
+  const kUp    = g.keys['ArrowUp']    || g.keys['w'] || g.keys['W'];
+  const kDown  = g.keys['ArrowDown']  || g.keys['s'] || g.keys['S'];
+
+  const anyKey = kLeft || kRight || kUp || kDown;
+
+  // Keyboard acceleration
+  if (kLeft)  b.vx -= PLAYER_ACCEL;
+  if (kRight) b.vx += PLAYER_ACCEL;
+  if (kUp)    b.vy -= PLAYER_ACCEL;
+  if (kDown)  b.vy += PLAYER_ACCEL;
+
+  // Axis friction when no key pressed on that axis
+  if (!kLeft && !kRight) b.vx *= PLAYER_FRICTION;
+  if (!kUp   && !kDown)  b.vy *= PLAYER_FRICTION;
+
+  // Mouse pull — only when keyboard is idle (so mouse doesn't fight keys)
+  if (!anyKey && bg.mouseX != null && bg.mouseY != null) {
+    const mdx  = bg.mouseX - b.x;
+    const mdy  = bg.mouseY - b.y;
+    const dist = Math.hypot(mdx, mdy);
+    if (dist > 20) {
+      b.vx += (mdx / dist) * 0.3;
+      b.vy += (mdy / dist) * 0.3;
+    }
+  }
+
+  clampSpeedPlayer(b);
 }
 
 // ── Ball physics ──────────────────────────────────────────────────────────────
@@ -46,11 +103,16 @@ function updateBalls() {
   for (let i = bg.balls.length - 1; i >= 0; i--) {
     const b = bg.balls[i];
 
-    // Stunned: freeze in place
+    // Stun: freeze in place, flicker handled in draw
     if (b.stunned) {
       b.stunnedT--;
       if (b.stunnedT <= 0) b.stunned = false;
       continue;
+    }
+
+    // Player input for main ball; autonomous inertia for mini-balls
+    if (b.isMain) {
+      applyPlayerInput(b);
     }
 
     // Integrate
@@ -58,11 +120,14 @@ function updateBalls() {
     b.y += b.vy;
 
     // Wall bounce
-    if (b.x - b.r < 0)    { b.x = b.r;       b.vx =  Math.abs(b.vx) + rand(-0.1, 0.1); sfx.wall(); }
-    if (b.x + b.r > cW)   { b.x = cW - b.r;  b.vx = -Math.abs(b.vx) + rand(-0.1, 0.1); sfx.wall(); }
-    if (b.y - b.r < 0)    { b.y = b.r;        b.vy =  Math.abs(b.vy) + rand(-0.1, 0.1); sfx.wall(); }
-    if (b.y + b.r > cH)   { b.y = cH - b.r;   b.vy = -Math.abs(b.vy) + rand(-0.1, 0.1); sfx.wall(); }
-    clampSpeed(b);
+    if (b.x - b.r < 0)  { b.x = b.r;      b.vx =  Math.abs(b.vx) + rand(-0.08, 0.08); sfx.wall(); }
+    if (b.x + b.r > cW) { b.x = cW - b.r; b.vx = -Math.abs(b.vx) + rand(-0.08, 0.08); sfx.wall(); }
+    if (b.y - b.r < 0)  { b.y = b.r;      b.vy =  Math.abs(b.vy) + rand(-0.08, 0.08); sfx.wall(); }
+    if (b.y + b.r > cH) { b.y = cH - b.r; b.vy = -Math.abs(b.vy) + rand(-0.08, 0.08); sfx.wall(); }
+
+    // Re-clamp after wall bounce (walls shouldn't launch player above max)
+    if (b.isMain) clampSpeedPlayer(b);
+    else          clampSpeedMini(b);
 
     // Mini-ball growth
     if (!b.isMain && b.r < 14) {
@@ -90,23 +155,25 @@ function updateBalls() {
         b.vy -= 2 * dot * ny;
 
         // Small outward impulse
-        b.vx += nx * 0.5;
-        b.vy += ny * 0.5;
-        clampSpeed(b);
+        b.vx += nx * 0.4;
+        b.vy += ny * 0.4;
 
-        // Spawn mini-ball if cap not reached; only full-size or main balls spawn
+        if (b.isMain) clampSpeedPlayer(b);
+        else          clampSpeedMini(b);
+
+        // Spawn mini-ball if cap not reached (main ball or full-size mini)
         if (bg.balls.length < 12 && (b.isMain || b.r >= 14)) {
           const spread = rand(-0.8, 0.8);
           bg.balls.push({
-            x:       c.x,
-            y:       c.y,
-            vx:      b.vx * 0.6 + spread,
-            vy:      b.vy * 0.6 + spread,
-            r:       5,
-            isMain:  false,
-            age:     0,
-            color:   PASTEL[Math.floor(Math.random() * PASTEL.length)],
-            stunned: false,
+            x:        c.x,
+            y:        c.y,
+            vx:       b.vx * 0.6 + spread,
+            vy:       b.vy * 0.6 + spread,
+            r:        5,
+            isMain:   false,
+            age:      0,
+            color:    PASTEL[Math.floor(Math.random() * PASTEL.length)],
+            stunned:  false,
             stunnedT: 0,
           });
           bg.score += 10;
@@ -145,43 +212,46 @@ function applyAction() {
   const b   = (bi >= 0 && bi < bg.balls.length) ? bg.balls[bi] : null;
 
   if (cat.action === 'squash') {
-    if (!b) return;
-    b.stunned   = true;
-    b.stunnedT  = 60;
+    // Squash always hits the player — apply stun and cost a life
+    const mi = mainBallIdx();
+    const mb = mi >= 0 ? bg.balls[mi] : null;
+    if (!mb) return;
+    mb.stunned  = true;
+    mb.stunnedT = 60;
     sfx.wall();
-    burst(b.x, b.y, '#ffd6a5', 12);
-    if (b.isMain) {
-      g.lives--;
-      if (_updateBloomHUD) _updateBloomHUD();
-      if (g.lives <= 0 && bloomUpdateHandlers.gameOver) bloomUpdateHandlers.gameOver();
-    }
+    burst(mb.x, mb.y, '#ffd6a5', 12);
+    g.lives--;
+    if (_updateBloomHUD) _updateBloomHUD();
+    if (g.lives <= 0 && bloomUpdateHandlers.gameOver) bloomUpdateHandlers.gameOver();
 
   } else if (cat.action === 'play') {
+    // Play bats any ball (fun, not harmful)
     if (!b) return;
     const boost = 1.5 + Math.random() * 1.5;
     const angle = Math.random() * Math.PI * 2;
     b.vx += Math.cos(angle) * boost;
     b.vy += Math.sin(angle) * boost;
-    clampSpeed(b);
+    if (b.isMain) clampSpeedPlayer(b);
+    else          clampSpeedMini(b);
     sfx.paddle();
     burst(b.x, b.y, '#b5ead7', 10);
 
   } else if (cat.action === 'eat') {
+    // Eat prefers mini-balls; no minis → costs a life
     const minis = bg.balls.reduce((acc, ball, idx) => {
       if (!ball.isMain) acc.push(idx);
       return acc;
     }, []);
 
     if (minis.length > 0) {
-      const idx    = minis[Math.floor(Math.random() * minis.length)];
-      const eaten  = bg.balls[idx];
+      const idx   = minis[Math.floor(Math.random() * minis.length)];
+      const eaten = bg.balls[idx];
       burst(eaten.x, eaten.y, '#ffb3c1', 14);
       bg.balls.splice(idx, 1);
       sfx.life();
     } else {
-      // No minis — eat main ball (lose a life)
-      const main = bg.balls.find(ball => ball.isMain);
-      if (main) burst(main.x, main.y, '#ff9ec4', 18);
+      const mi = mainBallIdx();
+      if (mi >= 0) burst(bg.balls[mi].x, bg.balls[mi].y, '#ff9ec4', 18);
       g.lives--;
       sfx.life();
       if (_updateBloomHUD) _updateBloomHUD();
@@ -198,8 +268,7 @@ function updateCat() {
     cat.cooldown--;
     if (cat.cooldown > 0) return;
 
-    // Pick random edge entry
-    const edge = Math.floor(Math.random() * 4); // 0=N 1=S 2=E 3=W
+    const edge = Math.floor(Math.random() * 4);
     if      (edge === 0) { cat.entryX = rand(40, cW - 40); cat.entryY = -35; }
     else if (edge === 1) { cat.entryX = rand(40, cW - 40); cat.entryY = cH + 35; }
     else if (edge === 2) { cat.entryX = cW + 35; cat.entryY = rand(40, cH - 40); }
@@ -224,21 +293,21 @@ function updateCat() {
       cat.phase = 'act';
       cat.timer = 30;
       cat.pawT  = 0;
-      // Pick target ball
-      if (cat.action === 'eat') {
-        // Prefer minis for eat
+      // Squash → always targets player; eat → prefers minis; play → any ball
+      if (cat.action === 'squash') {
+        cat.targetBallIdx = mainBallIdx();
+      } else if (cat.action === 'eat') {
         const minis = bg.balls.map((b, i) => ({ b, i })).filter(({ b }) => !b.isMain);
         cat.targetBallIdx = minis.length > 0
           ? minis[Math.floor(Math.random() * minis.length)].i
-          : nearestBallIdx(cat.x, cat.y);
+          : mainBallIdx();
       } else {
-        cat.targetBallIdx = nearestBallIdx(cat.x, cat.y);
+        cat.targetBallIdx = Math.floor(Math.random() * bg.balls.length);
       }
     }
 
   } else if (cat.phase === 'act') {
     cat.pawT = 1 - cat.timer / 30;
-    // Animate paw arc toward target ball
     const tb = (cat.targetBallIdx >= 0 && cat.targetBallIdx < bg.balls.length)
       ? bg.balls[cat.targetBallIdx] : null;
     if (tb) {
@@ -290,7 +359,6 @@ export function updateBloom() {
 
   if (_updateBloomHUD) _updateBloomHUD();
 
-  // Level complete
   if (bg.pathActivated >= bg.pathTotal && !bg.awaitingNextLevel) {
     bg.awaitingNextLevel = true;
     if (bloomUpdateHandlers.levelComplete) bloomUpdateHandlers.levelComplete();

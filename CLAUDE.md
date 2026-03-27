@@ -97,6 +97,7 @@ main.js           ← all of the above
 - `maze/update.js` exports `mazeUpdateHandlers{}`, `maze/game.js` populates them at module load
 - `bloom/update.js` exports `bloomUpdateHandlers{}`, `bloom/game.js` populates them at module load
 - `bloom/update.js` also exports `setBloomHUDUpdater(fn)` — called by `bloom/game.js` to inject `updateBloomHUD` without creating a `hud.js → bloom/update.js` cycle
+- Mouse tracking for bloom is a module-level `canvas.addEventListener` in `bloom/game.js`, gated on `g.gameMode === 'bloom'`; stores into `bg.mouseX/Y`; no cleanup needed
 
 ---
 
@@ -230,15 +231,15 @@ Traps never placed on the solution path.
 
 ### Gameplay
 - **Goal:** trigger all hidden path nodes along the canvas walls to advance the level
-- **Control:** none (passive/ambient) — ball physics run automatically; SPACE = pause
+- **Control:** WASD / arrow keys steer the main ball (acceleration + friction model); mouse cursor pulls the ball when no keys held; swipe on canvas (mobile); SPACE = pause
 - **Lives:** 3; losing all → Game Over
-- **Balls:** one main ball bounces freely; hitting cushions spawns a mini child-ball at the cushion centre; mini-balls grow (`r: 5 → 14` at `+0.02/frame`); full-size minis can also spawn children; max 12 balls total
+- **Balls:** player steers the main ball (starts at rest); hitting cushions spawns a mini child-ball at the cushion centre; mini-balls grow (`r: 5 → 14` at `+0.02/frame`) and bounce autonomously; full-size minis can also spawn children; max 12 balls total
 - **Cushions:** `2 + level` bumper pads (rejection-sampled: ≥60 px from edges, ≥80 px from centre, no overlaps); each cushion hit reflects velocity + small outward impulse + spawns child ball + `+10` score
 - **Path nodes:** `3 + level` nodes distributed evenly along the four canvas wall edges; initially faint (alpha 0.12); a ball passing within 18 px activates the node (glow + burst + `+50` score); all activated → level complete
 - **Cat:** visits every `max(240, 600 − (level−1)×30)` frames; enters from a random edge, slides to centre, performs an action, retreats:
-  - **Squash** (35%): stuns nearest ball for 60 frames (squashed ellipse); if main ball → `g.lives--`; game over when lives reach 0
-  - **Play** (40%): bats a random ball with a random velocity boost (1.5–3.0); harmless
-  - **Eat** (25%): removes a random mini-ball; if no minis → eats main ball (lose a life)
+  - **Squash** (35%): always targets the player's main ball — stuns it for 60 frames (squashed ellipse) and costs 1 life; game over when lives reach 0
+  - **Play** (40%): bats a random ball with a random velocity boost (1.5–3.0); harmless (can accidentally help)
+  - **Eat** (25%): removes a random mini-ball; if no minis → costs 1 life
 - **Levels:** cushions + path nodes grow each level; cat cooldown decreases; score carries across levels
 - **Best scores:** saved per level in `localStorage` key `bloom_best`
 

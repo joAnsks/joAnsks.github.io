@@ -8,6 +8,17 @@ import { sfx }                             from '../audio.js';
 // Wire the HUD updater into update.js (avoids circular import)
 setBloomHUDUpdater(updateBloomHUD);
 
+// ── Mouse tracking (module-level, runs once on import) ────────────────────────
+// Stores canvas-relative cursor position in bg.mouseX/Y for update.js to read.
+// Gated on bloom mode so it's a no-op when other games are active.
+canvas.addEventListener('mousemove', e => {
+  if (g.gameMode !== 'bloom' || g.state !== 'playing') { bg.mouseX = null; bg.mouseY = null; return; }
+  const rect = canvas.getBoundingClientRect();
+  bg.mouseX = e.clientX - rect.left;
+  bg.mouseY = e.clientY - rect.top;
+});
+canvas.addEventListener('mouseleave', () => { bg.mouseX = null; bg.mouseY = null; });
+
 const LS_KEY = 'bloom_best';
 
 function loadBestScores() {
@@ -31,14 +42,12 @@ function saveBestScore(level, score) {
 function initBloomLevel() {
   const cW = canvas.width, cH = canvas.height;
 
-  // One main ball starting at canvas centre with random velocity
-  const angle = Math.random() * Math.PI * 2;
-  const spd   = 2 + Math.random();
+  // Main ball starts at canvas centre — player steers it from rest
   bg.balls = [{
     x:        cW / 2,
     y:        cH / 2,
-    vx:       Math.cos(angle) * spd,
-    vy:       Math.sin(angle) * spd,
+    vx:       0,
+    vy:       0,
     r:        10,
     isMain:   true,
     age:      0,
@@ -88,11 +97,11 @@ export function startBloomGame() {
 
   showOverlay(
     'BALL BLOOM',
-    'A ball blooms into many when it<br>bounces off a cushion!<br><br>' +
-    'Mini-balls grow into full balls.<br>' +
-    'Light up all hidden PATH nodes<br>along the walls to advance.<br><br>' +
+    'Steer your ball into cushions<br>to bloom mini child-balls!<br><br>' +
+    'Find and touch all hidden<br>PATH nodes along the walls.<br><br>' +
+    'Mini-balls grow and help<br>activate nodes too!<br><br>' +
     'Watch out for the cat... 🐱<br><br>' +
-    'SPACE = pause',
+    'WASD / ARROWS or MOUSE<br>SPACE = pause',
     'START ▶'
   );
 }

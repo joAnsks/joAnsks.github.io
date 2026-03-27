@@ -225,6 +225,47 @@ export function drawBloom() {
     ctx.fillStyle = 'rgba(255,255,255,0.65)';
     ctx.beginPath(); ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.28, 0, TAU); ctx.fill();
 
+    // ── Player-ball indicators ──
+    if (b.isMain) {
+      // Pulsing outer ring — shows this is the player ball
+      ctx.strokeStyle = '#cdb4db';
+      ctx.lineWidth   = 1.5;
+      ctx.globalAlpha = 0.45 + 0.3 * Math.sin(bg.frame * 0.1);
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r + 5, 0, TAU); ctx.stroke();
+
+      // Velocity arrow — shows direction of travel
+      const spd = Math.hypot(b.vx, b.vy);
+      if (spd > 0.4) {
+        const nx = b.vx / spd, ny = b.vy / spd;
+        const arrowTip = { x: b.x + nx * (b.r + 10), y: b.y + ny * (b.r + 10) };
+        const arrowBase = { x: b.x + nx * b.r, y: b.y + ny * b.r };
+        const perpLen = 3.5;
+
+        ctx.globalAlpha = Math.min(1, spd / 2) * 0.85;
+        ctx.strokeStyle = '#cdb4db';
+        ctx.lineWidth   = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(arrowBase.x, arrowBase.y);
+        ctx.lineTo(arrowTip.x, arrowTip.y);
+        ctx.stroke();
+
+        // Arrow head
+        ctx.fillStyle = '#cdb4db';
+        ctx.beginPath();
+        ctx.moveTo(arrowTip.x, arrowTip.y);
+        ctx.lineTo(
+          arrowTip.x - nx * 5 + (-ny) * perpLen,
+          arrowTip.y - ny * 5 + ( nx) * perpLen
+        );
+        ctx.lineTo(
+          arrowTip.x - nx * 5 - (-ny) * perpLen,
+          arrowTip.y - ny * 5 - ( nx) * perpLen
+        );
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
     // Growth progress arc for growing mini-balls
     if (!b.isMain && b.r < 14) {
       const pct = (b.r - 5) / 9; // 0 → 1
