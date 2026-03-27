@@ -168,7 +168,7 @@ Completely isolated from `g{}`. Key fields:
 - **Goal:** navigate ball from (0,0) top-left to ★ exit at bottom-right
 - **Control:** WASD or arrow keys; Space = pause; swipe on canvas (mobile)
 - **Lives:** 3; losing all → Game Over
-- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life (unless shielded) and resets chaser to (0,0) with a 2 s grace period; heartbeat thumps when chaser is within 4 cells (Manhattan distance); a random meme jumpscare flashes for 1.2 s if the player survives the catch unshielded
+- **Chaser:** red enemy spawns at (0,0) with the ball; starts chasing after 10 s; speed ramps up each level; catching the ball costs 1 life (shield absorbs the catch instead) and resets chaser to (0,0) with a 2 s grace period; heartbeat thumps when chaser is within 4 cells (Manhattan distance); a random meme jumpscare flashes for 1.2 s on an unshielded catch
 - **Timer:** `performance.now()` sub-ms accuracy; pause shifts `mg.startTime`
 - **Levels:** maze grows 7×7 → 9×9 → … → 25×25 then cycles (10 sizes)
 - **Best times:** saved per level in `localStorage` key `maze_best`
@@ -178,15 +178,18 @@ Completely isolated from `g{}`. Key fields:
 - Cell walls: `{N, S, E, W}` — `true` = blocked
 
 ### Entities (~10% of cells)
-Entity pool (weighted): `teleport×3, freeze×2, speed×2, shield×1, life×1` — life becomes `life×3` when `g.lives === 1`. Traps never placed on the solution path.
+Entity pool (weighted, sums to 100 at normal lives):
 
-| Icon | Type | Kind | Effect |
-|---|---|---|---|
-| ⟳ | `teleport` | Trap | Warps ball to random cell; shield blocks |
-| ❄ | `freeze` | Power-up | Freezes the chaser for 3 s; chaser turns blue |
-| ★ | `speed` | Power-up | 2× player speed for 5 s |
-| ♥ | `shield` | Power-up | Absorbs next trap hit **or** chaser catch (no life lost, no jumpscare) |
-| + | `life` | Power-up | +1 life (max 5) |
+| Icon | Type | Kind | Weight (normal / last life) | Effect |
+|---|---|---|---|---|
+| ⟳ | `teleport` | Trap | 30% / 30% | Warps ball to random cell; shield blocks |
+| ⌛ | `slow` | Trap | 25% / 25% | Halves player speed for 3 s; shield blocks |
+| ❄ | `freeze` | Power-up | 20% / 20% | Freezes the chaser for 3 s; chaser turns blue |
+| ★ | `speed` | Power-up | 19% / 19% | 2× player speed for 5 s |
+| ♥ | `shield` | Power-up | 3% / 3% | Absorbs next trap hit **or** chaser catch |
+| + | `life` | Power-up | **3% / 15%** | +1 life (max 5); weight triples on last life |
+
+Traps never placed on the solution path.
 
 ---
 

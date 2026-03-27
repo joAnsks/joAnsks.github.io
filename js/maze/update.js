@@ -222,8 +222,8 @@ function onLanded() {
   for (const ent of mg.entities) {
     if (!ent.hit && ent.col === mg.ballCol && ent.row === mg.ballRow) {
       ent.hit = true;
-      if (ent.type === 'teleport') handleTrap(ent.type);
-      else                        handlePowerup(ent.type);
+      if (ent.type === 'teleport' || ent.type === 'slow') handleTrap(ent.type);
+      else                                               handlePowerup(ent.type);
       break;
     }
   }
@@ -255,6 +255,13 @@ function handleTrap(type) {
     mg.moving  = false; mg.moveT = 0;
 
     burst(mg.ballPx, mg.ballPy, '#ffb3c1', 18);
+
+  } else if (type === 'slow') {
+    sfx.wall();
+    burst(mg.ballPx, mg.ballPy, '#ffd6a5', 10);
+    mg.frozen      = true;
+    mg.freezeTimer = 180;               // 3 s at 60 fps
+    mg.moveSpeed   = BASE_SPEED * 0.5;
   }
 }
 

@@ -60,16 +60,20 @@ function solveMazePath(cols, rows) {
 // ── Scatter traps & power-ups ─────────────────────────────────
 function placeEntities(cols, rows) {
   mg.entities = [];
-  // Weighted pool: teleport is the dominant trap; shield/life are rare.
-  // On last life, life entries are boosted so at least one is likely to appear.
-  const TYPES = [
-    'teleport', 'teleport', 'teleport',
-    'freeze', 'freeze',
-    'speed', 'speed',
-    'shield',
-    ...(g.lives === 1 ? ['life', 'life', 'life'] : ['life']),
+  // Weighted entity picker — weights sum to 100 at normal lives.
+  // life jumps to 15% on last life so a rescue pickup is likely to appear.
+  const WEIGHTS = [
+    ['teleport', 30], ['slow', 25], ['freeze', 20], ['speed', 19],
+    ['shield', 3],    ['life', g.lives === 1 ? 15 : 3],
   ];
-  const TRAP_TYPES = new Set(['teleport']);
+  const pickType = () => {
+    const total = WEIGHTS.reduce((s, [, w]) => s + w, 0);
+    let r = Math.random() * total;
+    for (const [t, w] of WEIGHTS) { r -= w; if (r <= 0) return t; }
+    return WEIGHTS.at(-1)[0];
+  };
+
+  const TRAP_TYPES = new Set(['teleport', 'slow']);
   const density    = 0.10;  // ~10% of cells get an entity
   const total      = Math.floor(cols * rows * density);
 
@@ -84,7 +88,7 @@ function placeEntities(cols, rows) {
       col  = Math.floor(Math.random() * cols);
       row  = Math.floor(Math.random() * rows);
       key  = `${col},${row}`;
-      type = TYPES[Math.floor(Math.random() * TYPES.length)];
+      type = pickType();
       attempts++;
     } while ((used.has(key) || (TRAP_TYPES.has(type) && solutionPath.has(key))) && attempts < 200);
     if (attempts >= 200) break;
@@ -142,7 +146,7 @@ export function startMazeGame() {
   showOverlay(
     'BALL MAZE',
     'Reach the ★ exit to complete each level.<br><br>' +
-    '⟳ teleport warps you (trap)<br>' +
+    '⟳ teleport warps you &nbsp;|&nbsp; ⌛ slows you (traps)<br>' +
     '❄ freezes the chaser &nbsp;|&nbsp; ★ speed boost<br>' +
     '♥ shield (blocks chaser &amp; traps) &nbsp;|&nbsp; + extra life<br><br>' +
     'A red chaser starts with you — it chases after 10 s!<br><br>' +

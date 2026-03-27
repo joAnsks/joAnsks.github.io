@@ -75,8 +75,8 @@ export function drawMaze() {
     const ey = ent.row * CELL + CELL / 2;
     const ep = 0.7 + 0.3 * Math.sin(Date.now() / 300 + ent.col + ent.row);
 
-    const ICONS  = { teleport: '⟳', freeze: '❄', speed: '★', shield: '♥', life: '+' };
-    const COLORS = { teleport: '#ffb3c1', freeze: '#bde0fe', speed: '#fdffb6', shield: '#cdb4db', life: '#ffb3c1' };
+    const ICONS  = { teleport: '⟳', slow: '⌛', freeze: '❄', speed: '★', shield: '♥', life: '+' };
+    const COLORS = { teleport: '#ffb3c1', slow: '#ffd6a5', freeze: '#bde0fe', speed: '#fdffb6', shield: '#cdb4db', life: '#ffb3c1' };
 
     ctx.save();
     ctx.shadowColor = COLORS[ent.type];
@@ -156,14 +156,14 @@ export function drawMaze() {
     ctx.restore();
   }
 
-  // ── Freeze tint ───────────────────────────────────────────────
+  // ── Slow tint ─────────────────────────────────────────────────
   if (mg.frozen) {
-    ctx.fillStyle = 'rgba(189,224,254,0.07)';
+    ctx.fillStyle = 'rgba(255,214,165,0.07)';
     ctx.fillRect(0, 0, mg.cols * CELL, mg.rows * CELL);
   }
 
   // ── Ball glow ─────────────────────────────────────────────────
-  const ballColor = mg.boosted ? '#fdffb6' : mg.frozen ? '#bde0fe' : '#fff9fb';
+  const ballColor = mg.boosted ? '#fdffb6' : mg.frozen ? '#ffd6a5' : '#fff9fb';
   const grd = ctx.createRadialGradient(mg.ballPx, mg.ballPy, 0, mg.ballPx, mg.ballPy, 20);
   grd.addColorStop(0, 'rgba(255,240,255,0.55)');
   grd.addColorStop(1, 'rgba(255,180,210,0)');
@@ -178,18 +178,14 @@ export function drawMaze() {
 
   ctx.restore();
 
-  // ── On-canvas effect labels (freeze/boost timers) ─────────────
-  if (mg.boosted || mg.chaserFrozen) {
+  // ── On-canvas effect labels ───────────────────────────────────
+  if (mg.boosted || mg.frozen || mg.chaserFrozen) {
     ctx.font         = '7px "Press Start 2P", monospace';
     ctx.textAlign    = 'right';
     ctx.textBaseline = 'top';
-    if (mg.boosted) {
-      ctx.fillStyle = '#fdffb6';
-      ctx.fillText('SPEED!', W() - 8, 8);
-    }
-    if (mg.chaserFrozen) {
-      ctx.fillStyle = '#bde0fe';
-      ctx.fillText('CHASER FROZEN!', W() - 8, mg.boosted ? 20 : 8);
-    }
+    let labelY = 8;
+    if (mg.boosted)      { ctx.fillStyle = '#fdffb6'; ctx.fillText('SPEED!',         W() - 8, labelY); labelY += 12; }
+    if (mg.frozen)       { ctx.fillStyle = '#ffd6a5'; ctx.fillText('SLOWED!',        W() - 8, labelY); labelY += 12; }
+    if (mg.chaserFrozen) { ctx.fillStyle = '#bde0fe'; ctx.fillText('CHASER FROZEN!', W() - 8, labelY); }
   }
 }
