@@ -349,6 +349,7 @@ Traps never placed on the solution path.
 | `--shadow` | `#e0a8c0` | Borders, box shadows |
 | `--dark` | `#3d2b4e` | Headings, button text |
 | Canvas bg | `#2a1533` | Dark purple — retro feel |
+| Aquarium tank | `#b8eef0 → #7dd8dc → #56c4ca` | Pastel cyan water gradient (top → bottom) |
 
 ### Typography
 - **Font:** `Press Start 2P` (Google Fonts) — pixel/retro
