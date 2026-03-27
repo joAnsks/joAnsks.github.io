@@ -4,6 +4,7 @@ import { generateMaze, mazeSize }   from './gen.js';
 import { mazeUpdateHandlers }       from './update.js';
 import { showOverlay, hideOverlay, updateMazeHUD } from '../hud.js';
 import { stopChaserMusic } from '../audio.js';
+import { recordLevelComplete } from '../aquarium.js';
 
 const BEST_KEY = 'maze_best';
 
@@ -160,6 +161,7 @@ export function startMazeGame() {
 export function mazeLevelComplete() {
   stopChaserMusic();
   saveBestTime(g.level, mg.elapsed);
+  recordLevelComplete();
   mg.awaitingNextLevel = true;
   g.state = 'idle';
 

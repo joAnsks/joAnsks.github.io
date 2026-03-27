@@ -14,6 +14,7 @@ import { drawBloom }              from './bloom/draw.js';
 import { updateBloom }            from './bloom/update.js';
 import { startBloomGame, bloomPause, bloomResume, bloomHandlers } from './bloom/game.js';
 import { stopChaserMusic } from './audio.js';
+import { refreshAquarium } from './aquarium.js';
 
 // Inject transition handlers into bounce update (avoids circular dep)
 handlers.gameOver  = gameOver;
@@ -151,4 +152,5 @@ function loop() {
 
 // ── Boot ─────────────────────────────────────────────────────
 initPad(); initBall(); initBricks();
+refreshAquarium();
 loop();

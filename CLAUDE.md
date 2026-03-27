@@ -37,10 +37,12 @@ joAnsks.github.io/
     ├── input.js        # Keyboard/mouse/touch listeners (side-effect module)
     ├── draw.js         # Bounce renderer: draw(), shadeColor()
     ├── update.js       # Bounce logic: update(), handlers{} injection point
+    ├── aquarium.js     # Achievement tank: recordLevelComplete(), refreshAquarium()
+    │                   #   localStorage key 'aquarium_levels'; 1 fish per 10 levels
     ├── transitions.js  # Bounce lifecycle: startGame(), nextLevel(), pause(),
     │                   #   resume(), gameOver()
     ├── main.js         # Entry point: game-select wiring, resize, game loop,
-    │                   #   space/overlay-btn handlers, bubble spawner
+    │                   #   space/overlay-btn handlers, bubble spawner, refreshAquarium()
     ├── maze/
     │   ├── gen.js      # generateMaze(cols, rows), mazeSize(level)
     │   ├── state.js    # Isolated mg{} object (all maze mutable state)
@@ -78,17 +80,18 @@ powerups.js       ← state, audio, ball, paddle
 input.js          ← state                          (side-effect: registers listeners)
 draw.js           ← state
 update.js         ← state, audio, particles, powerups, paddle, ball
-transitions.js    ← state, paddle, ball, bricks, hud
+aquarium.js       ← no game deps (DOM + localStorage only)
+transitions.js    ← state, paddle, ball, bricks, hud, aquarium
 maze/gen.js       ← no game deps
 maze/state.js     ← no game deps
 maze/draw.js      ← state, maze/state
 maze/update.js    ← state, maze/state, audio, particles, hud, maze/draw
-maze/game.js      ← state, maze/state, maze/gen, maze/update, hud
+maze/game.js      ← state, maze/state, maze/gen, maze/update, hud, aquarium
 bloom/state.js    ← no game deps
 bloom/gen.js      ← state (PASTEL)
 bloom/update.js   ← state, bloom/state, audio, particles
 bloom/draw.js     ← state, bloom/state
-bloom/game.js     ← state, bloom/state, bloom/gen, bloom/update, hud, audio
+bloom/game.js     ← state, bloom/state, bloom/gen, bloom/update, hud, audio, aquarium
 main.js           ← all of the above
 ```
 
@@ -258,6 +261,7 @@ Traps never placed on the solution path.
 ### Game-Select Screen (`#game-select`)
 - Shown on load; three `.game-card` buttons (Brick Breaker, Ball Maze, Ball Bloom)
 - Clicking a card calls `startGame()`, `startMazeGame()`, or `startBloomGame()`, shows HUD + canvas
+- Below the cards: the **Achievement Tank** (`#aquarium`) — see section below
 
 ### HUD (`#hud`)
 - Hidden until a game starts
@@ -291,6 +295,16 @@ Traps never placed on the solution path.
 - `#share-btn` (`<button>`) click calls `shareScore(shareText, gameName)` from `js/share.js`
 - Share button shown on: Bounce Game Over, Maze Level Clear, Maze Game Over, Bloom Level Clear, Bloom Game Over
 - Share button hidden on: pause, resume, intro, next-level overlays
+
+### Achievement Tank (`#aquarium` in `#game-select`)
+- Sits below the game cards in the menu; hidden whenever a game is active (parent `#game-select` is hidden)
+- **`js/aquarium.js`** — no game deps; only touches DOM + `localStorage`
+  - `recordLevelComplete()` — increments `aquarium_levels` in localStorage, then calls `refreshAquarium()`
+  - `refreshAquarium()` — reads localStorage, computes fish count (`floor(levels / 10)`), rebuilds the tank DOM
+- **Hook points:** `recordLevelComplete()` is called in `nextLevel()` (Bounce), `mazeLevelComplete()` (Maze), `bloomLevelComplete()` (Bloom); `refreshAquarium()` called once on boot from `main.js`
+- **Fish:** up to 12 displayed at once; cycle through 10 emoji types (🐠🐡🐟🦈🐬🦑🦐🦞🦀🐙); swim left↔right via CSS `@keyframes swim-rtl` / `swim-ltr`; positions & speeds are deterministic (index-based) so re-renders don't cause jumps
+- **Progress label** (`#aq-progress`): shows `N / 10 levels for first fish` or `K fish · N / 10 for next`
+- **localStorage key:** `aquarium_levels` — cumulative integer; fish = `Math.floor(levels / 10)`
 
 ### Share (`js/share.js`)
 - `shareScore(shareText, gameName, stat, statLabel, btnEl)` — generates score card, uploads it, opens FB sharer

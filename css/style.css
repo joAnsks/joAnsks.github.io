@@ -258,3 +258,102 @@ canvas { display: block; }
 
 /* ── Ball Bloom ──────────────────────────────────────────── */
 #hint-bloom { display: none; }
+
+/* ── Achievement Aquarium ────────────────────────────────── */
+#aquarium {
+  width: 100%;
+  max-width: 560px;
+  padding: 0 4px 28px;
+}
+.aq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+.aq-title {
+  font-size: clamp(7px, 1.6vw, 9px);
+  color: var(--lavend);
+  letter-spacing: 1px;
+}
+.aq-progress {
+  font-size: 6px;
+  color: var(--shadow);
+  text-align: right;
+}
+.aq-tank {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(180deg, #1b3a6b 0%, #0d2144 60%, #091830 100%);
+  border: 3px solid var(--shadow);
+  border-radius: 12px;
+  box-shadow: 5px 5px 0 var(--shadow), 0 0 24px rgba(80, 140, 255, 0.18);
+  overflow: hidden;
+}
+/* glass water-surface sheen */
+.aq-tank::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0));
+  border-radius: 9px 9px 0 0;
+  pointer-events: none;
+}
+/* sandy floor */
+.aq-tank::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 14px;
+  background: linear-gradient(180deg, #9a7d3a, #6e5520);
+  opacity: 0.7;
+  border-radius: 0 0 9px 9px;
+  pointer-events: none;
+}
+.aq-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(5px, 1.2vw, 7px);
+  color: rgba(180, 210, 255, 0.35);
+  text-align: center;
+  line-height: 2.4;
+  pointer-events: none;
+}
+.aq-fish {
+  position: absolute;
+  line-height: 1;
+  animation: swim-rtl linear infinite;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
+}
+.aq-fish.ltr {
+  animation-name: swim-ltr;
+  transform: scaleX(-1);
+}
+@keyframes swim-rtl {
+  from { left: 106%; }
+  to   { left: -9%; }
+}
+@keyframes swim-ltr {
+  from { left: -9%; }
+  to   { left: 106%; }
+}
+.aq-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(180, 220, 255, 0.18);
+  border: 1px solid rgba(180, 220, 255, 0.30);
+  animation: aq-rise linear infinite;
+  pointer-events: none;
+}
+@keyframes aq-rise {
+  from { transform: translateY(0);      opacity: 0.7; }
+  to   { transform: translateY(-130px); opacity: 0; }
+}

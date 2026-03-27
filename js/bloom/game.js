@@ -4,6 +4,7 @@ import { generateCushions, generatePathNodes } from './gen.js';
 import { bloomUpdateHandlers, setBloomHUDUpdater } from './update.js';
 import { showOverlay, hideOverlay, updateBloomHUD } from '../hud.js';
 import { sfx }                             from '../audio.js';
+import { recordLevelComplete } from '../aquarium.js';
 
 // Wire the HUD updater into update.js (avoids circular import)
 setBloomHUDUpdater(updateBloomHUD);
@@ -110,6 +111,7 @@ export function bloomLevelComplete() {
   g.state = 'idle';
   bg.awaitingNextLevel = true;
   saveBest(bg.score);
+  recordLevelComplete();
   sfx.clear();
 
   showOverlay(
