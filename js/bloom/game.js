@@ -47,7 +47,7 @@ function initBloomLevel() {
     y:        cH / 2,
     vx:       0,
     vy:       0,
-    r:        10,
+    r:        16,
     isMain:   true,
     age:      0,
     color:    '#fff9fb',
